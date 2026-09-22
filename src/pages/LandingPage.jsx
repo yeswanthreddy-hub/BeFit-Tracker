@@ -1,9 +1,12 @@
-import { Link } from 'react-router-dom'
-import Logo from '../components/Logo'
+import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
-import Button from '../components/ui/Button'
+import Hero from '../components/home/Hero'
+import { HOME_LINKS } from '../components/layout/navigation'
 
-const HERO_CHIP = 'Workout planner + fitness tracker'
+const HOME_ACTIONS = [
+  { to: '/login', label: 'Log in', variant: 'ghost' },
+  { to: '/register', label: 'Get Started', variant: 'primary' },
+]
 
 const FEATURES = [
   {
@@ -27,96 +30,9 @@ const FEATURES = [
 function LandingPage() {
   return (
     <div className="landing">
-      <header className="site-header">
-        <div className="container site-header__inner">
-          <Link to="/" className="navbar__brand" aria-label="BeFit home">
-            <Logo size={32} />
-          </Link>
+      <Navbar links={HOME_LINKS} actions={HOME_ACTIONS} />
 
-          <nav className="site-header__nav" aria-label="Primary">
-            <ul>
-              <li>
-                <Link to="/exercises">Exercises</Link>
-              </li>
-              <li>
-                <Link to="/workouts">Workouts</Link>
-              </li>
-              <li>
-                <Link to="/dashboard">Dashboard</Link>
-              </li>
-            </ul>
-          </nav>
-
-          <div className="site-header__actions">
-            <Button to="/login" variant="ghost" size="sm">
-              Log in
-            </Button>
-            <Button to="/register" variant="primary" size="sm">
-              Get Started
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <section className="hero container">
-        <div className="hero__content animate-fade-up">
-          <span className="chip chip--primary">
-            <span className="chip__dot" aria-hidden="true" />
-            {HERO_CHIP}
-          </span>
-
-          <h1 className="hero__title">
-            Train with a plan.
-            <br />
-            Build an unshakeable streak.
-          </h1>
-
-          <p className="hero__sub">
-            Discover exercises, plan sessions, log every workout, and keep an
-            eye on food, macros, and progress — all in your browser.
-          </p>
-
-          <div className="hero__actions">
-            <Button to="/dashboard" variant="primary" size="lg">
-              Start training
-            </Button>
-            <Button to="/exercises" variant="secondary" size="lg">
-              Explore exercises
-            </Button>
-          </div>
-        </div>
-
-        <div
-          className="hero__stage animate-fade-up delay-2"
-          aria-hidden="true"
-        >
-          <div className="hero__card hero__card--back">
-            <span className="chip">This month</span>
-            <p className="hero__card-value">18 sessions</p>
-            <p className="hero__card-label">kept the momentum going</p>
-          </div>
-
-          <div className="hero__card hero__card--mid">
-            <span className="chip">Next up</span>
-            <p className="hero__card-title">Push Day</p>
-            <div className="progress">
-              <div className="progress__fill" style={{ width: '70%' }} />
-            </div>
-            <p className="hero__card-label">4 exercises · ~55 min</p>
-          </div>
-
-          <div className="hero__card hero__card--front">
-            <span className="chip chip--primary">
-              <span className="chip__dot" aria-hidden="true" />
-              Current streak
-            </span>
-            <p className="hero__card-value hero__card-value--big">6 days</p>
-            <p className="hero__card-label">
-              best streak <strong>12 days</strong> · train today to keep it alive
-            </p>
-          </div>
-        </div>
-      </section>
+      <Hero />
 
       <section className="features container" aria-labelledby="features-title">
         <div className="section-header">
