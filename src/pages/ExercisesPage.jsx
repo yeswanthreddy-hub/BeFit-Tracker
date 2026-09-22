@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import SectionHeader from '../components/ui/SectionHeader'
 import Button from '../components/ui/Button'
 import EmptyState from '../components/ui/EmptyState'
@@ -9,7 +9,12 @@ import { EXERCISE_CATEGORIES } from '../data/models'
 const ALL = 'All'
 
 function ExercisesPage() {
-  const [category, setCategory] = useState(ALL)
+  const location = useLocation()
+  const [category, setCategory] = useState(
+    location.state?.category && EXERCISE_CATEGORIES.includes(location.state.category)
+      ? location.state.category
+      : ALL,
+  )
   const [query, setQuery] = useState('')
 
   const visible = useMemo(() => {
