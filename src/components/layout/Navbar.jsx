@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import Logo from '../Logo'
 import { NAV_LINKS } from './navigation'
 
 function Navbar() {
@@ -6,10 +7,7 @@ function Navbar() {
     <header className="navbar">
       <div className="navbar__inner">
         <NavLink to="/" className="navbar__brand" aria-label="BeFit home">
-          <span className="navbar__mark" aria-hidden="true">
-            +b
-          </span>
-          <span className="navbar__wordmark">BeFit</span>
+          <Logo size={32} />
         </NavLink>
 
         <nav className="navbar__nav" aria-label="Primary">
