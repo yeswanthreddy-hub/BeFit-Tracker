@@ -8,3 +8,9 @@ export const NAV_LINKS = [
   { to: '/ai-tracker', label: 'AI Tracker' },
   { to: '/settings', label: 'Settings' },
 ]
+
+export const HOME_LINKS = [
+  { to: '/', label: 'Home' },
+  { to: '/exercises', label: 'Explore' },
+  { to: '/#about', label: 'About', hash: true },
+]
