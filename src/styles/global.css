@@ -58,3 +58,132 @@ body {
   font-size: 1.05rem;
   color: #9ba5ac;
 }
+
+/* --- App shell structure (expanded by the design system) --- */
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(10, 12, 14, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.navbar__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.navbar__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
+  color: #f3f6f4;
+  text-decoration: none;
+}
+
+.navbar__mark {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: #b9f34a;
+  color: #0a0c0e;
+  font-weight: 900;
+  font-size: 15px;
+}
+
+.navbar__links {
+  list-style: none;
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  flex-wrap: wrap;
+}
+
+.navbar__link {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 10px;
+  color: #9ba5ac;
+  text-decoration: none;
+  font-size: 0.94rem;
+  font-weight: 600;
+  transition: color 150ms ease, background 150ms ease;
+}
+
+.navbar__link:hover {
+  color: #f3f6f4;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.navbar__link--active {
+  color: #0a0c0e;
+  background: #b9f34a;
+}
+
+.navbar__link--active:hover {
+  color: #0a0c0e;
+  background: #c9ff5e;
+}
+
+.app-shell__main {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+/* --- Placeholder pages --- */
+
+.page-placeholder {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 0;
+}
+
+.page-placeholder__eyebrow {
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 13px;
+  font-weight: 700;
+  color: #b9f34a;
+}
+
+.page-placeholder h1 {
+  margin: 0 0 12px;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  letter-spacing: -0.03em;
+}
+
+.page-placeholder__note {
+  margin: 0;
+  max-width: 42rem;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #9ba5ac;
+}
+
+.page-placeholder__note a {
+  color: #b9f34a;
+}
