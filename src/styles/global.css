@@ -44,6 +44,7 @@
   /* ---------- layout ---------- */
   --container-max: 1200px;
   --nav-height: 68px;
+  --spacing-2xs: 6px;
   --spacing-xs: 8px;
   --spacing-sm: 16px;
   --spacing-md: 24px;
