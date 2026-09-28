@@ -2,7 +2,8 @@
  * Labelled text input used by the BeFit auth forms.
  *
  * Validation messages are wired to the input through `aria-describedby`, and
- * `aria-invalid` flips as soon as the field is in an error state.
+ * `aria-invalid` flips as soon as the field is in an error state. `labelAction`
+ * renders an optional control (e.g. "Forgot password?") beside the label.
  */
 function TextField({
   id,
@@ -15,6 +16,7 @@ function TextField({
   hint = '',
   placeholder = '',
   autoComplete,
+  labelAction = null,
   required = false,
   disabled = false,
   className = '',
@@ -26,9 +28,12 @@ function TextField({
 
   return (
     <div className={`form-field${error ? ' form-field--error' : ''} ${className}`.trim()}>
-      <label className="form-field__label" htmlFor={id}>
-        {label}
-      </label>
+      <div className="form-field__label-row">
+        <label className="form-field__label" htmlFor={id}>
+          {label}
+        </label>
+        {labelAction && <div className="form-field__label-action">{labelAction}</div>}
+      </div>
 
       <input
         id={id}

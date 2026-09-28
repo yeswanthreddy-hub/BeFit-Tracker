@@ -16,7 +16,11 @@
 
 import { getItem, setItem, removeItem } from '../utils/storage'
 import { STORAGE_KEYS } from '../utils/storageKeys'
-import { validateRegisterForm, AUTH_MESSAGES } from '../utils/validation'
+import {
+  validateLoginForm,
+  validateRegisterForm,
+  AUTH_MESSAGES,
+} from '../utils/validation'
 
 const USERS_KEY = STORAGE_KEYS.users
 const SESSION_KEY = STORAGE_KEYS.session
@@ -185,4 +189,42 @@ export function registerUser(values) {
   startSession(user.id)
 
   return { ok: true, user }
+}
+
+/* ---------- sign in / sign out ---------- */
+
+/**
+ * Check locally stored credentials and open a session.
+ *
+ * A wrong email and a wrong password return the same message so the form
+ * never reveals which one was incorrect.
+ *
+ * @returns {{ok: true, user: Object} | {ok: false, errors?: Object, error?: string}}
+ */
+export function signIn({ email, password } = {}) {
+  const errors = validateLoginForm({ email, password })
+  if (Object.keys(errors).length > 0) return { ok: false, errors }
+
+  const user = getUserByEmail(email)
+  const storedPassword = user ? String(user.password ?? '') : ''
+  const matches = user !== null && password === storedPassword
+
+  if (!matches) {
+    return { ok: false, error: AUTH_MESSAGES.invalidCredentials }
+  }
+
+  startSession(user.id)
+  ensureProfileForUser(user)
+
+  return { ok: true, user }
+}
+
+/**
+ * End the active session.
+ *
+ * Only `befit_session` is removed — the account and its profile stay in
+ * storage so logging back in restores everything.
+ */
+export function signOut() {
+  return clearSession()
 }

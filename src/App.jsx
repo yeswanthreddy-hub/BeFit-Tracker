@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthProvider'
 import AppLayout from './components/layout/AppLayout'
 import AuthLayout from './components/auth/AuthLayout'
+import PublicOnlyRoute from './components/routing/PublicOnlyRoute'
 
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
@@ -27,8 +28,22 @@ function App() {
           <Route path="/" element={<LandingPage />} />
 
           <Route element={<AuthLayout />}>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+            <Route
+              path="/login"
+              element={
+                <PublicOnlyRoute>
+                  <LoginPage />
+                </PublicOnlyRoute>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <PublicOnlyRoute>
+                  <RegisterPage />
+                </PublicOnlyRoute>
+              }
+            />
           </Route>
 
           <Route element={<AppLayout />}>

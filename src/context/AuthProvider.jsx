@@ -6,6 +6,8 @@ import {
   getUserById,
   readSession,
   registerUser,
+  signIn,
+  signOut,
 } from '../services/authService'
 
 const EMPTY = { session: null, user: null, profile: null }
@@ -43,14 +45,32 @@ export function AuthProvider({ children }) {
     return result
   }, [])
 
+  /** Opens a session for a returning user. */
+  const login = useCallback((credentials) => {
+    const result = signIn(credentials)
+    if (result.ok) setState(readAuthState())
+    return result
+  }, [])
+
+  /**
+   * Ends the session. The account and its profile are intentionally left in
+   * localStorage so signing back in restores the same user.
+   */
+  const logout = useCallback(() => {
+    signOut()
+    setState(EMPTY)
+  }, [])
+
   const value = useMemo(
     () => ({
       ...state,
       isAuthenticated: Boolean(state.user),
       register,
+      login,
+      logout,
       refresh,
     }),
-    [state, register, refresh],
+    [state, register, login, logout, refresh],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
