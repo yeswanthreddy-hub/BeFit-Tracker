@@ -6,7 +6,7 @@ import SectionHeader from '../components/ui/SectionHeader'
 import { seedBeFitData } from '../data/seed'
 import { isProfileComplete } from '../data/onboarding'
 import { useAuth } from '../hooks/useAuth'
-import { useLocalStorage } from '../hooks/useLocalStorage'
+import { useUserStorage } from '../hooks/useUserStorage'
 import { STORAGE_KEYS } from '../utils/storageKeys'
 import { emptyStreak } from '../data/models'
 
@@ -25,14 +25,17 @@ const EXPLORE = [
 
 function DashboardPage() {
   const { user, profile } = useAuth()
+  const userId = user?.id ?? null
 
   useEffect(() => {
-    seedBeFitData()
-  }, [])
+    seedBeFitData(userId)
+  }, [userId])
 
-  const [streak] = useLocalStorage(STORAGE_KEYS.streak, emptyStreak())
-  const [completed] = useLocalStorage(STORAGE_KEYS.completedWorkouts, [])
-  const [progress] = useLocalStorage(STORAGE_KEYS.progress, [])
+  // Scoped to the signed-in account, so another local account on this browser
+  // never sees this athlete's streak, history or progress.
+  const [streak] = useUserStorage(STORAGE_KEYS.streak, emptyStreak())
+  const [completed] = useUserStorage(STORAGE_KEYS.completedWorkouts, [])
+  const [progress] = useUserStorage(STORAGE_KEYS.progress, [])
 
   const firstName = user?.name?.split(' ')[0] ?? ''
   const profileReady = isProfileComplete(profile)

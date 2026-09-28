@@ -1,9 +1,8 @@
 import { getItem, setItem } from '../utils/storage'
-import { STORAGE_KEYS } from '../utils/storageKeys'
+import { STORAGE_KEYS, userDataKey } from '../utils/storageKeys'
 import {
   sampleCompletedWorkouts,
   sampleFoodLog,
-  sampleProfile,
   sampleProgress,
   sampleSettings,
   sampleStreak,
@@ -17,10 +16,14 @@ import {
  * The exercise catalog stays in code (src/data/sampleData.js) because it
  * ships with the app; user-owned data — workouts, results, food, progress —
  * is what lives in localStorage.
+ *
+ * User-owned data is scoped to `userId` so each local account gets its own
+ * copy instead of inheriting the previous athlete's history. Without an id
+ * (a signed-out visitor) the plain keys are used, which keeps the pre-login
+ * demo data working.
  */
-export function seedBeFitData() {
+export function seedBeFitData(userId = null) {
   const seeds = [
-    { key: STORAGE_KEYS.profile, value: sampleProfile },
     { key: STORAGE_KEYS.settings, value: sampleSettings },
     { key: STORAGE_KEYS.streak, value: sampleStreak },
     { key: STORAGE_KEYS.workouts, value: sampleWorkouts },
@@ -30,6 +33,7 @@ export function seedBeFitData() {
   ]
 
   seeds.forEach(({ key, value }) => {
-    if (getItem(key) === null) setItem(key, value)
+    const target = userDataKey(key, userId)
+    if (getItem(target) === null) setItem(target, value)
   })
 }
