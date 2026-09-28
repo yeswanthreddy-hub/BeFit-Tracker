@@ -6,6 +6,7 @@ import {
   getUserById,
   readSession,
   registerUser,
+  saveProfile,
   signIn,
   signOut,
 } from '../services/authService'
@@ -61,6 +62,16 @@ export function AuthProvider({ children }) {
     setState(EMPTY)
   }, [])
 
+  /** Saves the onboarding answers to the active account's profile. */
+  const updateProfile = useCallback((updates) => {
+    const session = readSession()
+    if (!session) return null
+
+    const profile = saveProfile(session.userId, updates)
+    if (profile) setState(readAuthState())
+    return profile
+  }, [])
+
   const value = useMemo(
     () => ({
       ...state,
@@ -68,9 +79,10 @@ export function AuthProvider({ children }) {
       register,
       login,
       logout,
+      updateProfile,
       refresh,
     }),
-    [state, register, login, logout, refresh],
+    [state, register, login, logout, updateProfile, refresh],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -191,8 +191,36 @@ export function registerUser(values) {
   return { ok: true, user }
 }
 
-/* ---------- sign in / sign out ---------- */
+/* ---------- profile updates ---------- */
 
+/**
+ * Persist the onboarding answers for an account.
+ *
+ * Only the three fitness fields are writable here; name, email and
+ * createdAt always come from the user record.
+ */
+export function saveProfile(userId, updates = {}) {
+  const user = getUserById(userId)
+  if (!user) return null
+
+  const current = ensureProfileForUser(user)
+  const duration = Number(updates.preferredWorkoutDuration)
+  const fallbackDuration = Number(current.preferredWorkoutDuration) || DEFAULT_WORKOUT_DURATION
+
+  const next = {
+    ...current,
+    fitnessGoal: updates.fitnessGoal ?? current.fitnessGoal ?? '',
+    experienceLevel: updates.experienceLevel ?? current.experienceLevel ?? '',
+    preferredWorkoutDuration:
+      Number.isFinite(duration) && duration > 0 ? duration : fallbackDuration,
+    updatedAt: nowIso(),
+  }
+
+  writeProfile(next)
+  return next
+}
+
+/* ---------- sign in / sign out ---------- */
 /**
  * Check locally stored credentials and open a session.
  *

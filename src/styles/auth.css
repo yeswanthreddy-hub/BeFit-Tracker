@@ -450,6 +450,10 @@
   padding: 0;
 }
 
+.onboarding__group .form-field__error {
+  margin-top: 8px;
+}
+
 .onboarding__legend {
   padding: 0;
   margin-bottom: 10px;

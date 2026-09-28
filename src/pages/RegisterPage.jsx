@@ -50,7 +50,7 @@ function RegisterPage() {
     setFormError('')
     setStatus('success')
     timerRef.current = setTimeout(() => {
-      navigate('/dashboard', { replace: true })
+      navigate('/onboarding', { replace: true })
     }, 700)
   }
 
@@ -67,7 +67,7 @@ function RegisterPage() {
 
       {status === 'success' ? (
         <FormAlert tone="success" title="Account created">
-          <p>Your BeFit profile is ready. Taking you to your dashboard…</p>
+          <p>Now a few quick questions so BeFit can tailor your training…</p>
         </FormAlert>
       ) : (
         <form className="auth-form__body" onSubmit={handleSubmit} noValidate>

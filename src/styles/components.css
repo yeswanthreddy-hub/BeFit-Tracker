@@ -1305,6 +1305,52 @@
   color: var(--color-primary);
 }
 
+/* ---------- dashboard profile strip ---------- */
+
+.dashboard-profile {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  background: linear-gradient(160deg, rgba(185, 243, 74, 0.1), var(--color-surface) 65%);
+  border-color: rgba(185, 243, 74, 0.24);
+}
+
+.dashboard-profile__body {
+  min-width: 0;
+}
+
+.dashboard-profile__label {
+  margin: 0;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-text-faint);
+}
+
+.dashboard-profile__name {
+  margin: 2px 0 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.dashboard-profile__email {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-profile__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+
 /* ---------- loading / empty states ---------- */
 
 .state {

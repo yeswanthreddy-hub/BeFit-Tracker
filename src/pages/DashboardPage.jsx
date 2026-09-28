@@ -4,6 +4,8 @@ import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 import SectionHeader from '../components/ui/SectionHeader'
 import { seedBeFitData } from '../data/seed'
+import { isProfileComplete } from '../data/onboarding'
+import { useAuth } from '../hooks/useAuth'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { STORAGE_KEYS } from '../utils/storageKeys'
 import { emptyStreak } from '../data/models'
@@ -22,6 +24,8 @@ const EXPLORE = [
 ]
 
 function DashboardPage() {
+  const { user, profile } = useAuth()
+
   useEffect(() => {
     seedBeFitData()
   }, [])
@@ -30,6 +34,8 @@ function DashboardPage() {
   const [completed] = useLocalStorage(STORAGE_KEYS.completedWorkouts, [])
   const [progress] = useLocalStorage(STORAGE_KEYS.progress, [])
 
+  const firstName = user?.name?.split(' ')[0] ?? ''
+  const profileReady = isProfileComplete(profile)
   const latestWeight = progress.length ? progress[progress.length - 1].bodyWeightKg : null
   const [now] = useState(() => Date.now())
   const sessionsThisMonth = useMemo(
@@ -42,9 +48,38 @@ function DashboardPage() {
     <div className="page">
       <SectionHeader
         eyebrow="Dashboard"
-        title={`${greeting()}, Athlete`}
+        title={`${greeting()}${firstName ? `, ${firstName}` : ', Athlete'}`}
         sub="Your training at a glance. Let's make today count."
       />
+
+      {user && (
+        <div className="card dashboard-profile">
+          <div className="dashboard-profile__body">
+            <p className="dashboard-profile__label">Signed in as</p>
+            <p className="dashboard-profile__name">{user.name}</p>
+            <p className="dashboard-profile__email">{user.email}</p>
+          </div>
+          <div className="dashboard-profile__chips">
+            <span className="chip chip--primary">
+              <span className="chip__dot" aria-hidden="true" />
+              {profile?.fitnessGoal || 'No goal yet'}
+            </span>
+            <span className="chip chip--accent">{profile?.experienceLevel || 'No level yet'}</span>
+            <span className="chip">
+              {profile?.preferredWorkoutDuration
+                ? `${profile.preferredWorkoutDuration} min sessions`
+                : 'Session length unset'}
+            </span>
+          </div>
+          {!profileReady && (
+            <div className="card__footer">
+              <Link to="/onboarding" className="section-header__link">
+                Finish profile setup →
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid grid--cols-4">
         <div className="card card--featured grid__span-2">
