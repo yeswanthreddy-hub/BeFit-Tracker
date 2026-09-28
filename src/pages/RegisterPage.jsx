@@ -1,15 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import FormAlert from '../components/auth/FormAlert'
+import PasswordField from '../components/auth/PasswordField'
 import TextField from '../components/auth/TextField'
 import Button from '../components/ui/Button'
 import { useAuth } from '../hooks/useAuth'
+import { useNotifications } from '../hooks/useNotifications'
 import { firstInvalidField, MIN_PASSWORD_LENGTH } from '../utils/validation'
 
 const EMPTY_VALUES = { name: '', email: '', password: '', confirmPassword: '' }
 
 function RegisterPage() {
   const { register } = useAuth()
+  const { notify } = useNotifications()
   const navigate = useNavigate()
   const timerRef = useRef(null)
 
@@ -49,6 +52,11 @@ function RegisterPage() {
     setErrors({})
     setFormError('')
     setStatus('success')
+    notify({
+      tone: 'success',
+      title: 'Welcome to BeFit',
+      message: `Account created for ${result.user.name}.`,
+    })
     timerRef.current = setTimeout(() => {
       navigate('/onboarding', { replace: true })
     }, 700)
@@ -70,7 +78,12 @@ function RegisterPage() {
           <p>Now a few quick questions so BeFit can tailor your training…</p>
         </FormAlert>
       ) : (
-        <form className="auth-form__body" onSubmit={handleSubmit} noValidate>
+        <form
+          className="auth-form__body"
+          onSubmit={handleSubmit}
+          noValidate
+          aria-busy={busy}
+        >
           {formError && <FormAlert>{formError}</FormAlert>}
 
           <TextField
@@ -100,10 +113,9 @@ function RegisterPage() {
             required
           />
 
-          <TextField
+          <PasswordField
             id="register-password"
             name="password"
-            type="password"
             label="Password"
             value={values.password}
             onChange={handleChange}
@@ -115,10 +127,9 @@ function RegisterPage() {
             required
           />
 
-          <TextField
+          <PasswordField
             id="register-confirmPassword"
             name="confirmPassword"
-            type="password"
             label="Confirm password"
             value={values.confirmPassword}
             onChange={handleChange}
@@ -129,7 +140,15 @@ function RegisterPage() {
             required
           />
 
-          <Button type="submit" variant="primary" size="lg" className="btn--block" disabled={busy}>
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            className="btn--block"
+            disabled={busy}
+            aria-busy={busy}
+          >
+            {busy && <span className="btn__spinner" aria-hidden="true" />}
             {busy ? 'Creating Account…' : 'Create Account'}
           </Button>
 

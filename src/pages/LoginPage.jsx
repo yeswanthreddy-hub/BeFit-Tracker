@@ -1,15 +1,18 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import FormAlert from '../components/auth/FormAlert'
+import PasswordField from '../components/auth/PasswordField'
 import TextField from '../components/auth/TextField'
 import Button from '../components/ui/Button'
 import { useAuth } from '../hooks/useAuth'
+import { useNotifications } from '../hooks/useNotifications'
 import { firstInvalidField } from '../utils/validation'
 
 const EMPTY_VALUES = { email: '', password: '' }
 
 function LoginPage() {
   const { login } = useAuth()
+  const { notify } = useNotifications()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -50,6 +53,11 @@ function LoginPage() {
 
     setErrors({})
     setFormError('')
+    notify({
+      tone: 'success',
+      title: 'Signed in',
+      message: `Good to see you again, ${result.user.name}.`,
+    })
     navigate(intended, { replace: true })
   }
 
@@ -62,7 +70,7 @@ function LoginPage() {
         the training data you already saved.
       </p>
 
-      <form className="auth-form__body" onSubmit={handleSubmit} noValidate>
+      <form className="auth-form__body" onSubmit={handleSubmit} noValidate aria-busy={busy}>
         {formError && <FormAlert>{formError}</FormAlert>}
 
         <TextField
@@ -79,10 +87,9 @@ function LoginPage() {
           required
         />
 
-        <TextField
+        <PasswordField
           id="login-password"
           name="password"
-          type="password"
           label="Password"
           value={values.password}
           onChange={handleChange}
@@ -115,7 +122,15 @@ function LoginPage() {
           </FormAlert>
         )}
 
-        <Button type="submit" variant="primary" size="lg" className="btn--block" disabled={busy}>
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          className="btn--block"
+          disabled={busy}
+          aria-busy={busy}
+        >
+          {busy && <span className="btn__spinner" aria-hidden="true" />}
           {busy ? 'Logging In…' : 'Login'}
         </Button>
 

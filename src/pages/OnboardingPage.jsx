@@ -4,6 +4,7 @@ import Button from '../components/ui/Button'
 import ChoiceGroup from '../components/auth/ChoiceGroup'
 import FormAlert from '../components/auth/FormAlert'
 import { useAuth } from '../hooks/useAuth'
+import { useNotifications } from '../hooks/useNotifications'
 import { DEFAULT_WORKOUT_DURATION } from '../services/authService'
 import {
   DURATION_OPTIONS,
@@ -21,6 +22,7 @@ const DURATION_CHOICES = DURATION_OPTIONS.map((minutes) => ({
 
 function OnboardingPage() {
   const { user, profile, updateProfile } = useAuth()
+  const { notify } = useNotifications()
   const navigate = useNavigate()
 
   const [values, setValues] = useState(() => ({
@@ -60,10 +62,22 @@ function OnboardingPage() {
     }
 
     setBusy(true)
-    updateProfile({
+    const profile = updateProfile({
       fitnessGoal: values.fitnessGoal,
       experienceLevel: values.experienceLevel,
       preferredWorkoutDuration: Number(values.preferredWorkoutDuration),
+    })
+
+    if (!profile) {
+      setBusy(false)
+      setFormError('We could not save your profile in this browser. Please try again.')
+      return
+    }
+
+    notify({
+      tone: 'success',
+      title: 'Profile saved',
+      message: `${values.fitnessGoal} · ${values.experienceLevel} · ${values.preferredWorkoutDuration} min sessions.`,
     })
     navigate('/dashboard', { replace: true })
   }
@@ -83,7 +97,7 @@ function OnboardingPage() {
         reminders around you. You can change any of this later in settings.
       </p>
 
-      <form className="auth-form__body" onSubmit={handleSubmit} noValidate>
+      <form className="auth-form__body" onSubmit={handleSubmit} noValidate aria-busy={busy}>
         {formError && <FormAlert>{formError}</FormAlert>}
 
         <ChoiceGroup
@@ -115,7 +129,15 @@ function OnboardingPage() {
           onChange={(value) => setValue('preferredWorkoutDuration', value)}
         />
 
-        <Button type="submit" variant="primary" size="lg" className="btn--block" disabled={busy}>
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          className="btn--block"
+          disabled={busy}
+          aria-busy={busy}
+        >
+          {busy && <span className="btn__spinner" aria-hidden="true" />}
           {busy ? 'Saving…' : 'Complete Setup'}
         </Button>
 

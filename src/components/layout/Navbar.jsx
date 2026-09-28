@@ -1,8 +1,10 @@
 import { useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import Logo from '../Logo'
 import Button from '../ui/Button'
-import { NAV_LINKS } from './navigation'
+import { useAuth } from '../../hooks/useAuth'
+import { useNotifications } from '../../hooks/useNotifications'
+import { ACCOUNT_LINKS, GUEST_ACTIONS, GUEST_LINKS, NAV_LINKS } from './navigation'
 
 const linkClassName = ({ isActive }) =>
   isActive ? 'navbar__link navbar__link--active' : 'navbar__link'
@@ -30,10 +32,38 @@ function NavbarLink({ link, onNavigate }) {
   )
 }
 
-function Navbar({ links = NAV_LINKS, actions = [] }) {
+/**
+ * BeFit navigation bar.
+ *
+ * `scope="marketing"` is used on the landing page (a trimmed, product-focused
+ * set), while the default `scope="app"` keeps the full in-app navigation.
+ * Either way the links and actions follow the local session: signed out shows
+ * Login / Get Started, signed in shows the athlete's name and Logout.
+ */
+function Navbar({ scope = 'app', links, actions }) {
+  const { isAuthenticated, user, logout } = useAuth()
+  const { notify } = useNotifications()
+  const navigate = useNavigate()
   const [open, setOpen] = useState(false)
+
   const close = () => setOpen(false)
   const toggle = () => setOpen((value) => !value)
+
+  const resolvedLinks =
+    links ?? (isAuthenticated ? (scope === 'marketing' ? ACCOUNT_LINKS : NAV_LINKS) : GUEST_LINKS)
+  const resolvedActions = actions ?? (isAuthenticated ? [] : GUEST_ACTIONS)
+  const firstName = user?.name?.split(' ')[0] ?? ''
+
+  function handleLogout() {
+    logout()
+    close()
+    navigate('/')
+    notify({
+      tone: 'info',
+      title: 'Signed out',
+      message: 'Your account and training data stay saved in this browser.',
+    })
+  }
 
   return (
     <header className="navbar">
@@ -44,7 +74,7 @@ function Navbar({ links = NAV_LINKS, actions = [] }) {
 
         <nav className="navbar__nav" aria-label="Primary">
           <ul className="navbar__links">
-            {links.map((link) => (
+            {resolvedLinks.map((link) => (
               <li key={link.label}>
                 <NavbarLink link={link} />
               </li>
@@ -52,9 +82,19 @@ function Navbar({ links = NAV_LINKS, actions = [] }) {
           </ul>
         </nav>
 
-        {actions.length > 0 && (
-          <div className="navbar__actions">
-            {actions.map((action) => (
+        <div className="navbar__actions">
+          {isAuthenticated ? (
+            <div className="navbar__account">
+              <span className="navbar__user" title={user?.email}>
+                <span className="navbar__user-dot" aria-hidden="true" />
+                {firstName}
+              </span>
+              <Button variant="secondary" size="sm" onClick={handleLogout}>
+                Logout
+              </Button>
+            </div>
+          ) : (
+            resolvedActions.map((action) => (
               <Button
                 key={action.label}
                 to={action.to}
@@ -63,9 +103,9 @@ function Navbar({ links = NAV_LINKS, actions = [] }) {
               >
                 {action.label}
               </Button>
-            ))}
-          </div>
-        )}
+            ))
+          )}
+        </div>
 
         <button
           type="button"
@@ -88,15 +128,29 @@ function Navbar({ links = NAV_LINKS, actions = [] }) {
       >
         <nav aria-label="Mobile">
           <ul className="navbar__mobile-links">
-            {links.map((link) => (
+            {resolvedLinks.map((link) => (
               <li key={link.label}>
                 <NavbarLink link={link} onNavigate={close} />
               </li>
             ))}
           </ul>
-          {actions.length > 0 && (
-            <div className="navbar__panel-actions">
-              {actions.map((action) => (
+          <div className="navbar__panel-actions">
+            {isAuthenticated ? (
+              <>
+                <span className="navbar__panel-user">
+                  <span className="navbar__user-dot" aria-hidden="true" />
+                  {user?.name}
+                </span>
+                <Button
+                  variant="secondary"
+                  className="navbar__panel-action"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </Button>
+              </>
+            ) : (
+              resolvedActions.map((action) => (
                 <Button
                   key={action.label}
                   to={action.to}
@@ -106,9 +160,9 @@ function Navbar({ links = NAV_LINKS, actions = [] }) {
                 >
                   {action.label}
                 </Button>
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </nav>
       </div>
     </header>
