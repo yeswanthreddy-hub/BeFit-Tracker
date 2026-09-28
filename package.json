@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
+    "test": "node --import ./test/helpers/register.mjs --test test/*.test.js",
+    "test:watch": "node --import ./test/helpers/register.mjs --test --watch test/*.test.js",
     "preview": "vite preview"
   },
   "dependencies": {

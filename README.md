@@ -51,8 +51,29 @@ npm install     # install dependencies
 npm run dev     # start the dev server
 npm run build   # production build
 npm run lint    # oxlint
+npm test        # unit tests (Node test runner, no extra dependency)
 npm run preview # preview the production build
 ```
+
+## Tests
+
+Pure logic is covered by `node:test`, so the suite runs with no test-framework
+dependency:
+
+```bash
+npm test
+```
+
+| File | Covers |
+| --- | --- |
+| `test/validation.test.js` | Email/password/name rules, register + login form errors, first-invalid-field focus order |
+| `test/authService.test.js` | Registration, duplicate emails, sign-in/out, session shape, profile writes, and recovery from corrupt `localStorage` |
+| `test/storage.test.js` | JSON round-trips, corrupt-value fallbacks, `befit_` prefix isolation, no-storage degradation |
+
+A localStorage stub in `test/helpers/browser.js` stands in for the browser, so
+the real service and utility code is exercised rather than a reimplementation.
+Because the app's own imports omit file extensions, `test/helpers/extension-resolver.mjs`
+maps them to real files for the Node resolver instead of touching app source.
 
 ## Environment
 
