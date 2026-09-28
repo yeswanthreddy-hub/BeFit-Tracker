@@ -50,7 +50,7 @@ describe('registerUser', () => {
     const [user] = readUsers()
     assert.equal(user.email, 'alex@example.com')
     assert.equal(user.name, 'Alex Carter')
-    assert.equal(readProfile().userId, user.id)
+    assert.equal(readProfile(user.id).userId, user.id)
     assert.equal(readSession().userId, user.id)
   })
 
@@ -71,8 +71,8 @@ describe('registerUser', () => {
   })
 
   it('seeds sensible profile defaults', () => {
-    registerUser(account)
-    const profile = readProfile()
+    const { user } = registerUser(account)
+    const profile = readProfile(user.id)
     assert.equal(profile.fitnessGoal, '')
     assert.equal(profile.experienceLevel, '')
     assert.equal(profile.preferredWorkoutDuration, DEFAULT_WORKOUT_DURATION)
@@ -190,7 +190,7 @@ describe('signOut', () => {
     assert.equal(signOut(), true)
     assert.equal(readSession(), null)
     assert.equal(readUsers().length, 1)
-    assert.equal(readProfile().userId, user.id)
+    assert.equal(readProfile(user.id).userId, user.id)
   })
 
   it('is safe to call twice', () => {
@@ -248,19 +248,19 @@ describe('saveProfile', () => {
     const { user } = registerUser(account)
     saveProfile(user.id, full)
 
-    assert.equal(readProfile().fitnessGoal, 'Build Muscle')
-    assert.equal(readProfile().experienceLevel, 'Beginner')
-    assert.equal(readProfile().preferredWorkoutDuration, 45)
-    assert.ok(!Number.isNaN(Date.parse(readProfile().updatedAt)))
+    assert.equal(readProfile(user.id).fitnessGoal, 'Build Muscle')
+    assert.equal(readProfile(user.id).experienceLevel, 'Beginner')
+    assert.equal(readProfile(user.id).preferredWorkoutDuration, 45)
+    assert.ok(!Number.isNaN(Date.parse(readProfile(user.id).updatedAt)))
   })
 
   it('keeps identity fields owned by the user record', () => {
     const { user } = registerUser(account)
     saveProfile(user.id, full)
 
-    assert.equal(readProfile().userId, user.id)
-    assert.equal(readProfile().email, 'alex@example.com')
-    assert.equal('password' in readProfile(), false)
+    assert.equal(readProfile(user.id).userId, user.id)
+    assert.equal(readProfile(user.id).email, 'alex@example.com')
+    assert.equal('password' in readProfile(user.id), false)
   })
 
   it('leaves untouched fields alone on a partial update', () => {
@@ -268,23 +268,23 @@ describe('saveProfile', () => {
     saveProfile(user.id, full)
     saveProfile(user.id, { experienceLevel: 'Advanced' })
 
-    assert.equal(readProfile().fitnessGoal, 'Build Muscle')
-    assert.equal(readProfile().preferredWorkoutDuration, 45)
-    assert.equal(readProfile().experienceLevel, 'Advanced')
+    assert.equal(readProfile(user.id).fitnessGoal, 'Build Muscle')
+    assert.equal(readProfile(user.id).preferredWorkoutDuration, 45)
+    assert.equal(readProfile(user.id).experienceLevel, 'Advanced')
   })
 
   it('ignores an invalid duration', () => {
     const { user } = registerUser(account)
     saveProfile(user.id, full)
     saveProfile(user.id, { preferredWorkoutDuration: 'nonsense' })
-    assert.equal(readProfile().preferredWorkoutDuration, 45)
+    assert.equal(readProfile(user.id).preferredWorkoutDuration, 45)
   })
 
   it('returns null for an unknown user and writes nothing', () => {
-    registerUser(account)
-    const before = readProfile()
+    const { user } = registerUser(account)
+    const before = readProfile(user.id)
     assert.equal(saveProfile('ghost', { fitnessGoal: 'Lose Weight' }), null)
-    assert.deepEqual(readProfile(), before)
+    assert.deepEqual(readProfile(user.id), before)
   })
 })
 
@@ -301,6 +301,7 @@ describe('profile recovery', () => {
   it('returns null without a user', () => {
     installBrowser()
     assert.equal(ensureProfileForUser(null), null)
+    assert.equal(createProfileForUser(null), null)
   })
 
   it('keeps an intact profile', () => {
@@ -356,8 +357,13 @@ describe('corrupt localStorage recovery', () => {
   })
 
   it('rejects a profile that is not an object', () => {
-    installBrowser({ befit_profile: '[1,2,3]' })
-    assert.equal(readProfile(), null)
+    installBrowser({ 'befit_u_user-1_profile': '[1,2,3]' })
+    assert.equal(readProfile('user-1'), null)
+  })
+
+  it('rejects a profile whose userId does not match', () => {
+    installBrowser({ 'befit_u_user-1_profile': JSON.stringify({ userId: 'someone-else', fitnessGoal: 'x' }) })
+    assert.equal(ensureProfileForUser({ id: 'user-1' }).fitnessGoal, '')
   })
 
   it('survives a full register/login/logout cycle on damaged data', () => {

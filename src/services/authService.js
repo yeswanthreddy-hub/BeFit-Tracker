@@ -15,7 +15,7 @@
  */
 
 import { getItem, setItem, removeItem } from '../utils/storage'
-import { STORAGE_KEYS } from '../utils/storageKeys'
+import { STORAGE_KEYS, userDataKey } from '../utils/storageKeys'
 import {
   validateLoginForm,
   validateRegisterForm,
@@ -24,7 +24,16 @@ import {
 
 const USERS_KEY = STORAGE_KEYS.users
 const SESSION_KEY = STORAGE_KEYS.session
-const PROFILE_KEY = STORAGE_KEYS.profile
+
+/**
+ * Profiles are stored per account (`befit_u_<userId>_profile`) so one local
+ * account's onboarding answers can never overwrite another's. Falls back to
+ * the plain key when there is no id, which keeps signed-out visitors and
+ * pre-existing installs working.
+ */
+function profileKey(userId) {
+  return userDataKey(STORAGE_KEYS.profile, userId)
+}
 
 export const DEFAULT_WORKOUT_DURATION = 30
 
@@ -86,6 +95,7 @@ export function isEmailTaken(email) {
 
 /** Build the fitness profile record that belongs to a new account. */
 export function createProfileForUser(user) {
+  if (!user) return null
   return {
     userId: user.id,
     id: user.id,
@@ -99,13 +109,13 @@ export function createProfileForUser(user) {
   }
 }
 
-export function readProfile() {
-  const stored = getItem(PROFILE_KEY)
+export function readProfile(userId = null) {
+  const stored = getItem(profileKey(userId))
   return isPlainObject(stored) ? stored : null
 }
 
-export function writeProfile(profile) {
-  return setItem(PROFILE_KEY, profile)
+export function writeProfile(userId, profile) {
+  return setItem(profileKey(userId), profile)
 }
 
 /**
@@ -115,10 +125,10 @@ export function writeProfile(profile) {
  */
 export function ensureProfileForUser(user) {
   if (!user) return null
-  const profile = readProfile()
+  const profile = readProfile(user.id)
   if (profile && profile.userId === user.id) return profile
   const fresh = createProfileForUser(user)
-  writeProfile(fresh)
+  writeProfile(user.id, fresh)
   return fresh
 }
 
@@ -171,9 +181,6 @@ export function registerUser(values) {
     email,
     password: String(values.password),
     createdAt: nowIso(),
-    fitnessGoal: '',
-    experienceLevel: '',
-    preferredWorkoutDuration: DEFAULT_WORKOUT_DURATION,
   }
 
   const users = readUsers()
@@ -185,7 +192,7 @@ export function registerUser(values) {
     }
   }
 
-  writeProfile(createProfileForUser(user))
+  writeProfile(user.id, createProfileForUser(user))
   startSession(user.id)
 
   return { ok: true, user }
@@ -216,7 +223,7 @@ export function saveProfile(userId, updates = {}) {
     updatedAt: nowIso(),
   }
 
-  writeProfile(next)
+  writeProfile(userId, next)
   return next
 }
 
