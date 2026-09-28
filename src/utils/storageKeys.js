@@ -9,6 +9,8 @@ export const PREFIX = 'befit_'
 
 export const STORAGE_KEYS = {
   user: 'befit_user',
+  users: 'befit_users',
+  session: 'befit_session',
   profile: 'befit_profile',
   workouts: 'befit_workouts',
   completedWorkouts: 'befit_completed_workouts',
