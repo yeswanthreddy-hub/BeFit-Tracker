@@ -438,6 +438,381 @@
   text-decoration: none;
 }
 
+/* ---------- today's summary ---------- */
+
+.today-summary {
+  padding: var(--spacing-md);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-border);
+  background: linear-gradient(160deg, var(--color-surface-elevated), var(--color-surface));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), var(--shadow-card);
+}
+
+.today-summary__heading {
+  margin: 0 0 var(--spacing-sm);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.today-summary__tiles {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  background: var(--color-border);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.today-summary__tile {
+  padding: var(--spacing-sm);
+  background: var(--color-surface);
+}
+
+.today-summary__tile--primary {
+  background: linear-gradient(150deg, rgba(185, 243, 74, 0.1), var(--color-surface) 70%);
+}
+
+.today-summary__tile--accent {
+  background: linear-gradient(150deg, rgba(42, 200, 180, 0.1), var(--color-surface) 70%);
+}
+
+.today-summary__label {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.today-summary__value {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 4px 0 0;
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.today-summary__suffix {
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--color-text-muted);
+}
+
+.today-summary__note {
+  margin: var(--spacing-sm) 0 0;
+  font-size: 0.85rem;
+  color: var(--color-text-faint);
+}
+
+/* ---------- consistency row ---------- */
+
+.dashboard__consistency {
+  display: grid;
+  gap: var(--spacing-sm);
+}
+
+/* ---------- streak card ---------- */
+
+.streak-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  background: linear-gradient(160deg, rgba(42, 200, 180, 0.08), var(--color-surface) 62%);
+}
+
+.streak-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+}
+
+.streak-card__flame {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.streak-card__title {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.streak-card__sub {
+  margin: 4px 0 0;
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+}
+
+.streak-card__body {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.streak-card__ring-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 118px;
+  height: 118px;
+}
+
+.streak-card__ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.streak-card__ring-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.07);
+  stroke-width: 8;
+}
+
+.streak-card__ring-fill {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 700ms var(--ease-out);
+  filter: drop-shadow(0 0 6px rgba(185, 243, 74, 0.45));
+}
+
+.streak-card__ring-value {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+.streak-card__stats {
+  display: grid;
+  gap: var(--spacing-xs);
+  margin: 0;
+  min-width: 140px;
+}
+
+.streak-card__stat dt {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.streak-card__stat dd {
+  margin: 0;
+  font-weight: 800;
+}
+
+/* ---------- weekly activity ---------- */
+
+.weekly-activity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.weekly-activity__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.weekly-activity__title {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.weekly-activity__count {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--color-text-muted);
+}
+
+.weekly-activity__days {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+.weekly-activity__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 2px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-elevated);
+}
+
+.weekly-activity__bar {
+  width: 6px;
+  height: 30px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.09);
+  transition: background var(--transition-normal), height var(--transition-normal);
+}
+
+.weekly-activity__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text-faint);
+}
+
+.weekly-activity__day--active {
+  border-color: rgba(185, 243, 74, 0.4);
+  background: rgba(185, 243, 74, 0.1);
+}
+
+.weekly-activity__day--active .weekly-activity__bar {
+  background: var(--color-primary);
+  box-shadow: 0 0 10px rgba(185, 243, 74, 0.4);
+}
+
+.weekly-activity__day--active .weekly-activity__label {
+  color: var(--color-primary);
+}
+
+.weekly-activity__day--today {
+  border-style: dashed;
+  border-color: var(--color-border-strong);
+}
+
+.weekly-activity__day--today .weekly-activity__label {
+  color: var(--color-text);
+}
+
+.weekly-activity__check {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+/* ---------- recent activity ---------- */
+
+.recent-activity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.recent-activity__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.recent-activity__title {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.recent-activity__all {
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.recent-activity__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: var(--spacing-sm) 0 var(--spacing-xs);
+}
+
+.recent-activity__empty-title {
+  margin: 0;
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.recent-activity__empty-note {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+}
+
+.recent-activity__list {
+  list-style: none;
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+.recent-activity__item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.recent-activity__item:hover {
+  border-color: var(--color-border-strong);
+  transform: translateX(3px);
+}
+
+.recent-activity__badge {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-dim);
+  color: var(--color-primary);
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.recent-activity__badge-unit {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.recent-activity__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.recent-activity__name {
+  font-weight: 800;
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-activity__meta {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
 /* ---------- quick workouts ---------- */
 
 .quick-workouts {
@@ -639,10 +1014,6 @@
   .explore__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
-  .progress-overview__grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (min-width: 900px) {
@@ -652,10 +1023,6 @@
 
   .dashboard__consistency {
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-  }
-
-  .dashboard__detail {
-    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
   }
 
   .start-workout {
@@ -739,8 +1106,7 @@
 /* ---------- reduced motion ---------- */
 
 @media (prefers-reduced-motion: reduce) {
-  .streak-card__ring-fill,
-  .progress-overview__bar-fill {
+  .streak-card__ring-fill {
     transition: none;
   }
 }

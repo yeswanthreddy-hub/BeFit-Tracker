@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 
 import DashboardHeader from '../components/dashboard/DashboardHeader'
@@ -5,23 +6,58 @@ import WelcomeSection from '../components/dashboard/WelcomeSection'
 import ProfileSummary from '../components/dashboard/ProfileSummary'
 import StartWorkoutCard from '../components/dashboard/StartWorkoutCard'
 import QuickWorkoutSection from '../components/dashboard/QuickWorkoutSection'
+import TodaySummary from '../components/dashboard/TodaySummary'
+import StreakCard from '../components/dashboard/StreakCard'
+import WeeklyActivity from '../components/dashboard/WeeklyActivity'
+import RecentActivity from '../components/dashboard/RecentActivity'
 import ExploreSection from '../components/dashboard/ExploreSection'
 
 import { useAuth } from '../hooks/useAuth'
+import { useUserStorage } from '../hooks/useUserStorage'
+import { STORAGE_KEYS } from '../utils/storageKeys'
 import { isProfileComplete } from '../data/onboarding'
+import { calculateStreak } from '../utils/streak'
+import {
+  completedOnDay,
+  recentActivity,
+  weeklyActivity,
+  weeklyCompleted,
+} from '../utils/dashboard'
 
 /**
  * BeFit user dashboard — the athlete's command centre.
  *
  * Identity comes from `useAuth`, which reads the local session and resolves the
- * account and its onboarding profile from localStorage. Nothing is hardcoded and
- * no statistics are invented.
+ * account and its onboarding profile from localStorage. History comes from
+ * `useUserStorage`, which scopes each key to the signed-in athlete so no local
+ * account can see another's numbers. Nothing is hardcoded and no statistics are
+ * invented: a new account legitimately shows zeroes.
  *
  * The route stays wrapped in `ProtectedRoute`, so visiting /dashboard without a
  * session redirects to /login.
  */
 function DashboardPage() {
   const { user, profile } = useAuth()
+
+  const [completed] = useUserStorage(STORAGE_KEYS.completedWorkouts, [])
+
+  // One timestamp per render pass so every date comparison on the page agrees
+  // on what "today" is.
+  const now = useMemo(() => new Date(), [])
+
+  const derived = useMemo(() => {
+    const list = Array.isArray(completed) ? completed : []
+
+    return {
+      todayCount: completedOnDay(list, now),
+      weekCount: weeklyCompleted(list, now),
+      totalCount: list.length,
+      streak: calculateStreak(list),
+      days: weeklyActivity(list, now),
+      recent: recentActivity(list, 4),
+    }
+  }, [completed, now])
+
   const profileReady = isProfileComplete(profile)
 
   return (
@@ -34,6 +70,24 @@ function DashboardPage() {
       </div>
 
       <StartWorkoutCard />
+
+      <TodaySummary
+        todayCount={derived.todayCount}
+        streak={derived.streak.current}
+        weekCount={derived.weekCount}
+        totalCount={derived.totalCount}
+      />
+
+      <div className="dashboard__consistency">
+        <StreakCard
+          current={derived.streak.current}
+          best={derived.streak.best}
+          lastWorkoutDate={derived.streak.lastWorkoutDate}
+        />
+        <WeeklyActivity days={derived.days} />
+      </div>
+
+      <RecentActivity items={derived.recent} />
 
       <QuickWorkoutSection />
 
