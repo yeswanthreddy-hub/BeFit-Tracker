@@ -3,6 +3,8 @@ import { describe, it } from 'node:test'
 
 import {
   completedOnDay,
+  getBasicTotals,
+  getRecommendation,
   recentActivity,
   recordDate,
   recordTitle,
@@ -106,6 +108,94 @@ describe('recentActivity', () => {
 
   it('skips records it cannot place in time', () => {
     assert.deepEqual(recentActivity([{ id: 'a' }, { id: 'b', date: 'nope' }]), [])
+  })
+})
+
+describe('getBasicTotals', () => {
+  it('reports zeroes and no weight for a new account', () => {
+    assert.deepEqual(getBasicTotals([], []), {
+      totalWorkouts: 0,
+      totalMinutes: 0,
+      latestWeightKg: null,
+      weightChangeKg: null,
+    })
+  })
+
+  it('sums workouts and training minutes', () => {
+    const totals = getBasicTotals(
+      [
+        { ...on(10, 1), durationMinutes: 20 },
+        { ...on(10, 2), durationMinutes: 35 },
+      ],
+      [],
+    )
+    assert.equal(totals.totalWorkouts, 2)
+    assert.equal(totals.totalMinutes, 55)
+  })
+
+  it('reads the latest weight and the change from the first entry', () => {
+    const totals = getBasicTotals([], [
+      { id: 'p1', date: '2026-09-01', bodyWeightKg: 80 },
+      { id: 'p2', date: '2026-10-01', bodyWeightKg: 77.4 },
+    ])
+    assert.equal(totals.latestWeightKg, 77.4)
+    assert.equal(totals.weightChangeKg, -2.6)
+  })
+
+  it('leaves weight alone when no progress is tracked', () => {
+    const totals = getBasicTotals([on(10, 1)], [])
+    assert.equal(totals.latestWeightKg, null)
+    assert.equal(totals.weightChangeKg, null)
+  })
+})
+
+describe('getRecommendation', () => {
+  it('maps goal and experience to a specific session', () => {
+    const rec = getRecommendation({
+      fitnessGoal: 'Build Muscle',
+      experienceLevel: 'Beginner',
+      preferredWorkoutDuration: 30,
+    })
+    assert.equal(rec.title, 'Beginner Strength Session')
+    assert.equal(rec.durationMinutes, 30)
+  })
+
+  it('handles experience case insensitively', () => {
+    const rec = getRecommendation({ fitnessGoal: 'Build Muscle', experienceLevel: 'beginner' })
+    assert.equal(rec.title, 'Beginner Strength Session')
+  })
+
+  it('suggests hypertrophy work for a trained lifter', () => {
+    const rec = getRecommendation({ fitnessGoal: 'Build Muscle', experienceLevel: 'Advanced' })
+    assert.equal(rec.title, 'Hypertrophy Push Day')
+  })
+
+  it('covers each onboarding goal', () => {
+    const expected = {
+      'Lose Weight': 'Conditioning Circuit',
+      'Improve Strength': 'Strength Foundations',
+      'Improve Endurance': 'Cardio Conditioning',
+      'General Fitness': 'Full Body Starter',
+    }
+    for (const [goal, title] of Object.entries(expected)) {
+      assert.equal(getRecommendation({ fitnessGoal: goal }).title, title)
+    }
+  })
+
+  it('falls back safely for an incomplete profile', () => {
+    const rec = getRecommendation(null)
+    assert.equal(rec.title, 'Full Body Starter')
+    assert.equal(rec.durationMinutes, 30)
+    assert.equal(rec.goal, '')
+  })
+
+  it('is deterministic for the same profile', () => {
+    const profile = {
+      fitnessGoal: 'Improve Endurance',
+      experienceLevel: 'Intermediate',
+      preferredWorkoutDuration: 45,
+    }
+    assert.deepEqual(getRecommendation(profile), getRecommendation(profile))
   })
 })
 

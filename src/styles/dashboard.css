@@ -663,7 +663,13 @@
   height: 30px;
   border-radius: var(--radius-pill);
   background: rgba(255, 255, 255, 0.09);
-  transition: background var(--transition-normal), height var(--transition-normal);
+  transition: background var(--transition-normal), height var(--transition-normal),
+    transform var(--transition-normal);
+}
+
+/* Active days lift their bar so the state is legible in grayscale too. */
+.weekly-activity__day--active .weekly-activity__bar {
+  transform: translateY(-3px);
 }
 
 .weekly-activity__label {
@@ -700,6 +706,192 @@
   font-weight: 800;
   color: var(--color-primary);
   line-height: 1;
+}
+
+/* ---------- detail row ---------- */
+
+.dashboard__detail {
+  display: grid;
+  gap: var(--spacing-sm);
+}
+
+/* ---------- progress overview ---------- */
+
+.progress-overview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.progress-overview__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.progress-overview__title {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.progress-overview__all {
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.progress-overview__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: var(--spacing-sm) 0;
+}
+
+.progress-overview__empty-title {
+  margin: 0;
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.progress-overview__empty-note {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.progress-overview__meter-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-xs);
+  margin-bottom: 8px;
+}
+
+.progress-overview__meter-label {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.progress-overview__meter-value {
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.progress-overview__bar {
+  height: 10px;
+}
+
+.progress-overview__bar-fill {
+  width: 0;
+  transition: width 900ms var(--ease-out);
+}
+
+.progress-overview__grid {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.progress-overview__metric {
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+}
+
+.progress-overview__metric dt {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.progress-overview__metric dd {
+  margin: 4px 0 0;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.progress-overview__delta {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.progress-overview__delta--down {
+  color: var(--color-primary);
+}
+
+.progress-overview__delta--up {
+  color: var(--color-accent);
+}
+
+/* ---------- recommendation ---------- */
+
+.recommendation {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background:
+    radial-gradient(520px 260px at 88% -30%, rgba(42, 200, 180, 0.16), transparent 66%),
+    var(--color-surface);
+  overflow: hidden;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.recommendation:hover {
+  transform: translateY(-3px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), var(--shadow-card-hover);
+}
+
+.recommendation__glow {
+  position: absolute;
+  bottom: -90px;
+  left: -70px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(42, 200, 180, 0.18), transparent 68%);
+  pointer-events: none;
+}
+
+.recommendation__eyebrow,
+.recommendation__title,
+.recommendation__text,
+.recommendation__meta {
+  position: relative;
+}
+
+.recommendation__eyebrow {
+  margin: 0;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.recommendation__title {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.recommendation__text {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.94rem;
+}
+
+.recommendation__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: var(--spacing-xs);
 }
 
 /* ---------- recent activity ---------- */
@@ -830,6 +1022,14 @@
   flex-direction: column;
   gap: 10px;
   height: 100%;
+  /* Layered depth so the templates read as a stack of session cards rather
+     than a flat table. The lift comes from transform, which keeps it cheap. */
+  transform-style: preserve-3d;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.quick-card:hover {
+  transform: perspective(900px) translateY(-6px) rotateX(2.5deg);
 }
 
 .quick-card__head {
@@ -956,6 +1156,11 @@
   color: var(--color-text);
 }
 
+/* Whole-card tap target: the arrow is decorative, the tile is the button. */
+.explore__tile:focus-visible {
+  border-color: var(--color-primary);
+}
+
 .explore__tile:hover .explore__arrow {
   color: var(--color-primary);
   transform: translate(4px, -50%);
@@ -1014,6 +1219,10 @@
   .explore__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .progress-overview__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (min-width: 900px) {
@@ -1023,6 +1232,10 @@
 
   .dashboard__consistency {
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+
+  .dashboard__detail {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
   }
 
   .start-workout {
@@ -1106,7 +1319,18 @@
 /* ---------- reduced motion ---------- */
 
 @media (prefers-reduced-motion: reduce) {
-  .streak-card__ring-fill {
+  .dashboard > * {
+    animation: none;
+  }
+
+  .streak-card__ring-fill,
+  .progress-overview__bar-fill,
+  .weekly-activity__bar,
+  .quick-card {
     transition: none;
+  }
+
+  .quick-card:hover {
+    transform: none;
   }
 }

@@ -9,6 +9,8 @@ import QuickWorkoutSection from '../components/dashboard/QuickWorkoutSection'
 import TodaySummary from '../components/dashboard/TodaySummary'
 import StreakCard from '../components/dashboard/StreakCard'
 import WeeklyActivity from '../components/dashboard/WeeklyActivity'
+import ProgressOverview from '../components/dashboard/ProgressOverview'
+import RecommendationCard from '../components/dashboard/RecommendationCard'
 import RecentActivity from '../components/dashboard/RecentActivity'
 import ExploreSection from '../components/dashboard/ExploreSection'
 
@@ -19,6 +21,7 @@ import { isProfileComplete } from '../data/onboarding'
 import { calculateStreak } from '../utils/streak'
 import {
   completedOnDay,
+  getBasicTotals,
   recentActivity,
   weeklyActivity,
   weeklyCompleted,
@@ -40,6 +43,7 @@ function DashboardPage() {
   const { user, profile } = useAuth()
 
   const [completed] = useUserStorage(STORAGE_KEYS.completedWorkouts, [])
+  const [progress] = useUserStorage(STORAGE_KEYS.progress, [])
 
   // One timestamp per render pass so every date comparison on the page agrees
   // on what "today" is.
@@ -47,6 +51,7 @@ function DashboardPage() {
 
   const derived = useMemo(() => {
     const list = Array.isArray(completed) ? completed : []
+    const entries = Array.isArray(progress) ? progress : []
 
     return {
       todayCount: completedOnDay(list, now),
@@ -55,8 +60,9 @@ function DashboardPage() {
       streak: calculateStreak(list),
       days: weeklyActivity(list, now),
       recent: recentActivity(list, 4),
+      totals: getBasicTotals(list, entries),
     }
-  }, [completed, now])
+  }, [completed, progress, now])
 
   const profileReady = isProfileComplete(profile)
 
@@ -85,6 +91,11 @@ function DashboardPage() {
           lastWorkoutDate={derived.streak.lastWorkoutDate}
         />
         <WeeklyActivity days={derived.days} />
+      </div>
+
+      <div className="dashboard__detail">
+        <ProgressOverview weekCount={derived.weekCount} totals={derived.totals} />
+        <RecommendationCard profile={profile} />
       </div>
 
       <RecentActivity items={derived.recent} />
