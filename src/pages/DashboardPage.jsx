@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom'
 import DashboardHeader from '../components/dashboard/DashboardHeader'
 import WelcomeSection from '../components/dashboard/WelcomeSection'
 import ProfileSummary from '../components/dashboard/ProfileSummary'
+import StartWorkoutCard from '../components/dashboard/StartWorkoutCard'
+import QuickWorkoutSection from '../components/dashboard/QuickWorkoutSection'
+import ExploreSection from '../components/dashboard/ExploreSection'
 
 import { useAuth } from '../hooks/useAuth'
 import { isProfileComplete } from '../data/onboarding'
@@ -29,6 +32,12 @@ function DashboardPage() {
         <WelcomeSection user={user} profile={profile} />
         <ProfileSummary user={user} profile={profile} />
       </div>
+
+      <StartWorkoutCard />
+
+      <QuickWorkoutSection />
+
+      <ExploreSection />
 
       {!profileReady && (
         <aside className="dashboard__setup card" aria-labelledby="dashboard-setup-title">

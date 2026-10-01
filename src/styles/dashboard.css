@@ -1,5 +1,5 @@
 /* =========================================================
-   BeFit dashboard — shell, header and hero
+   BeFit dashboard — command centre layout
    ========================================================= */
 
 .dashboard {
@@ -338,6 +338,254 @@
   text-decoration: underline;
 }
 
+/* ---------- primary start workout ---------- */
+
+.start-workout {
+  position: relative;
+  display: grid;
+  gap: var(--spacing-md);
+  padding: clamp(1.5rem, 4vw, 2.3rem);
+  border-radius: var(--radius-card);
+  border: 1px solid rgba(185, 243, 74, 0.34);
+  background:
+    linear-gradient(145deg, rgba(185, 243, 74, 0.2), rgba(185, 243, 74, 0.04) 46%, transparent 70%),
+    linear-gradient(160deg, #171d16, #0d1110 80%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 26px 60px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.start-workout:hover {
+  transform: translateY(-3px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 32px 70px rgba(0, 0, 0, 0.58);
+}
+
+.start-workout__glow {
+  position: absolute;
+  bottom: -140px;
+  right: -100px;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(185, 243, 74, 0.26), transparent 66%);
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+.start-workout__ring {
+  position: absolute;
+  top: -34px;
+  right: -34px;
+  display: grid;
+  place-items: center;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 1px solid rgba(185, 243, 74, 0.22);
+  background: rgba(185, 243, 74, 0.06);
+  transform: rotateX(58deg);
+  pointer-events: none;
+}
+
+.start-workout__ring-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: rgba(185, 243, 74, 0.32);
+  transform: rotateX(-58deg);
+}
+
+.start-workout__body,
+.start-workout__actions {
+  position: relative;
+}
+
+.start-workout__eyebrow {
+  margin: 0 0 6px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.start-workout__title {
+  margin: 0;
+  font-size: clamp(1.45rem, 3.6vw, 2.1rem);
+  max-width: 22ch;
+}
+
+.start-workout__text {
+  margin: 10px 0 0;
+  max-width: 52ch;
+  color: var(--color-text-muted);
+}
+
+.start-workout__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.start-workout__cta {
+  box-shadow: 0 14px 34px rgba(185, 243, 74, 0.34);
+}
+
+.start-workout__secondary {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* ---------- quick workouts ---------- */
+
+.quick-workouts {
+  display: flex;
+  flex-direction: column;
+}
+
+.quick-workouts__grid {
+  display: grid;
+  gap: var(--spacing-sm);
+}
+
+.quick-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.quick-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-xs);
+}
+
+.quick-card__title {
+  margin: 0;
+  font-size: 1.02rem;
+}
+
+.quick-card__duration {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  flex-shrink: 0;
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-dim);
+  color: var(--color-primary);
+}
+
+.quick-card__duration-value {
+  font-weight: 800;
+}
+
+.quick-card__unit {
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.quick-card__text {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.quick-card__meta {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
+}
+
+.quick-card__meta-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-xs);
+}
+
+.quick-card__meta dt {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-faint);
+}
+
+.quick-card__meta dd {
+  margin: 0;
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+.quick-card__footer {
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+/* ---------- explore ---------- */
+
+.explore {
+  display: flex;
+  flex-direction: column;
+}
+
+.explore__grid {
+  list-style: none;
+  display: grid;
+  gap: var(--spacing-xs);
+  margin: 0;
+  padding: 0;
+}
+
+.explore__tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 40px 14px var(--spacing-sm);
+  text-decoration: none;
+  color: var(--color-text);
+  height: 100%;
+}
+
+.explore__title {
+  font-weight: 800;
+  font-size: 0.98rem;
+}
+
+.explore__text {
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.explore__arrow {
+  position: absolute;
+  top: 50%;
+  right: var(--spacing-sm);
+  transform: translateY(-50%);
+  color: var(--color-text-faint);
+  font-size: 1.05rem;
+  transition: transform var(--transition-fast), color var(--transition-fast);
+}
+
+.explore__tile:hover {
+  color: var(--color-text);
+}
+
+.explore__tile:hover .explore__arrow {
+  color: var(--color-primary);
+  transform: translate(4px, -50%);
+}
+
 /* ---------- setup nudge ---------- */
 
 .dashboard__setup {
@@ -369,17 +617,71 @@
 }
 
 .dashboard > *:nth-child(1) { animation-delay: 0ms; }
-.dashboard > *:nth-child(2) { animation-delay: 70ms; }
-.dashboard > *:nth-child(3) { animation-delay: 140ms; }
-.dashboard > *:nth-child(4) { animation-delay: 210ms; }
-.dashboard > *:nth-child(5) { animation-delay: 280ms; }
-.dashboard > *:nth-child(n + 6) { animation-delay: 350ms; }
+.dashboard > *:nth-child(2) { animation-delay: 60ms; }
+.dashboard > *:nth-child(3) { animation-delay: 120ms; }
+.dashboard > *:nth-child(4) { animation-delay: 180ms; }
+.dashboard > *:nth-child(5) { animation-delay: 240ms; }
+.dashboard > *:nth-child(6) { animation-delay: 300ms; }
+.dashboard > *:nth-child(7) { animation-delay: 360ms; }
+.dashboard > *:nth-child(n + 8) { animation-delay: 420ms; }
 
 /* ---------- responsive ---------- */
+
+@media (min-width: 640px) {
+  .today-summary__tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quick-workouts__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .explore__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .progress-overview__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 
 @media (min-width: 900px) {
   .dashboard__hero {
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+
+  .dashboard__consistency {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+
+  .dashboard__detail {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+
+  .start-workout {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .start-workout__actions {
+    justify-content: flex-end;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+  }
+
+  .today-summary__tiles {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .explore__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1180px) {
+  .quick-workouts__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
@@ -404,5 +706,41 @@
 
   .dash-header__profile {
     padding: 5px;
+  }
+}
+
+@media (max-width: 479px) {
+  .today-summary__tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .weekly-activity__days {
+    gap: 4px;
+  }
+
+  .weekly-activity__day {
+    padding: 6px 1px;
+  }
+
+  .weekly-activity__bar {
+    height: 24px;
+  }
+
+  .start-workout__actions,
+  .start-workout__actions .btn {
+    width: 100%;
+  }
+
+  .profile-summary__footer .btn {
+    width: 100%;
+  }
+}
+
+/* ---------- reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .streak-card__ring-fill,
+  .progress-overview__bar-fill {
+    transition: none;
   }
 }
