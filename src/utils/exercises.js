@@ -236,4 +236,104 @@ export function exerciseCountLabel(count, isFiltered = false) {
   return isFiltered ? `${count} ${noun} found` : `${count} ${noun}`
 }
 
+/** Value a filter uses to mean "no restriction". */
+export const ANY_OPTION = 'All'
+
+/** Filter names rendered as selects on the library page. */
+export const EXERCISE_FILTERS = ['category', 'difficulty', 'equipment', 'type']
+
+/** A filter set with nothing selected. */
+export const DEFAULT_FILTERS = Object.freeze({
+  category: ANY_OPTION,
+  difficulty: ANY_OPTION,
+  equipment: ANY_OPTION,
+  type: ANY_OPTION,
+})
+
+/** Whether a single filter is restricting the results. */
+function isSet(value) {
+  return Boolean(value) && value !== ANY_OPTION
+}
+
+/**
+ * How many filters are narrowing the list.
+ *
+ * Used for the "Filters (2)" badge and for the Clear button, so the UI never
+ * has to re-derive the rule.
+ *
+ * @param {Partial<typeof DEFAULT_FILTERS>} filters
+ */
+export function activeFilterCount(filters) {
+  return EXERCISE_FILTERS.filter((name) => isSet(filters?.[name])).length
+}
+
+/** Whether any filter or search term is active. */
+export function isExerciseQueryActive(filters, query = '') {
+  return activeFilterCount(filters) > 0 || normalizeQuery(query) !== ''
+}
+
+/**
+ * Apply every filter at once.
+ *
+ * Each select is independent and they combine with AND, so
+ * Legs + Beginner + Bodyweight returns only movements that satisfy all three.
+ * An unset ("All") filter never removes anything.
+ *
+ * @param {import('../data/exercises.js').Exercise[]} exercises
+ * @param {Partial<typeof DEFAULT_FILTERS>} [filters]
+ */
+export function filterExercises(exercises, filters = {}) {
+  const { category, difficulty, equipment, type } = { ...DEFAULT_FILTERS, ...filters }
+
+  return exercises.filter(
+    (exercise) =>
+      (!isSet(category) || exercise.category === category) &&
+      (!isSet(difficulty) || exercise.difficulty === difficulty) &&
+      (!isSet(equipment) || exercise.equipment === equipment) &&
+      (!isSet(type) || exercise.type === type),
+  )
+}
+
+/**
+ * Score how closely two exercises belong together.
+ *
+ * Shared target muscles matter most, then the same category, then the same
+ * difficulty. Purely arithmetic — no model, no ranking service.
+ */
+function relatedScore(candidate, exercise, targets) {
+  const shared = candidate.targetMuscles.filter((muscle) => targets.has(muscle)).length
+  const sameCategory = candidate.category === exercise.category ? 3 : 0
+  const sameDifficulty = candidate.difficulty === exercise.difficulty ? 1 : 0
+
+  return shared * 2 + sameCategory + sameDifficulty
+}
+
+/**
+ * Exercises worth looking at next.
+ *
+ * Same category, same difficulty and overlapping target muscles, ranked by a
+ * simple score. Ties break alphabetically so the list never reshuffles between
+ * renders.
+ *
+ * @param {import('../data/exercises.js').Exercise|null} exercise
+ * @param {number} [limit]
+ * @param {import('../data/exercises.js').Exercise[]} [exercises]
+ * @returns {import('../data/exercises.js').Exercise[]}
+ */
+export function getRelatedExercises(exercise, limit = 4, exercises = EXERCISES) {
+  if (!exercise?.id) return []
+
+  const targets = new Set(exercise.targetMuscles ?? [])
+
+  return exercises
+    .filter((candidate) => candidate.id !== exercise.id)
+    .map((candidate) => ({ candidate, score: relatedScore(candidate, exercise, targets) }))
+    .filter(({ score }) => score > 0)
+    .sort(
+      (a, b) => b.score - a.score || a.candidate.name.localeCompare(b.candidate.name),
+    )
+    .slice(0, limit)
+    .map(({ candidate }) => candidate)
+}
+
 export { EXERCISE_CATEGORY_NAMES, SEARCHABLE_FIELDS }

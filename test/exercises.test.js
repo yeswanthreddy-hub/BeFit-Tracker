@@ -20,12 +20,19 @@ import {
   isExerciseCategory,
 } from '../src/data/exerciseCategories.js'
 import {
+  ANY_OPTION,
+  DEFAULT_FILTERS,
+  EXERCISE_FILTERS,
+  activeFilterCount,
   distinctValues,
   exerciseCountLabel,
+  filterExercises,
   findCatalogIssues,
   getExerciseById,
   getExerciseCategoryRecord,
   getExercisesByCategory,
+  getRelatedExercises,
+  isExerciseQueryActive,
   matchesExerciseQuery,
   normalizeQuery,
   primaryMuscle,
@@ -375,6 +382,142 @@ describe('exercise count label', () => {
 
   it('handles an empty result', () => {
     assert.equal(exerciseCountLabel(0, true), '0 exercises found')
+  })
+})
+
+describe('filtering exercises', () => {
+  it('returns everything when nothing is selected', () => {
+    assert.equal(filterExercises(EXERCISES).length, EXERCISES.length)
+    assert.equal(filterExercises(EXERCISES, DEFAULT_FILTERS).length, EXERCISES.length)
+  })
+
+  it('treats "All" as no restriction', () => {
+    assert.equal(
+      filterExercises(EXERCISES, { difficulty: ANY_OPTION, equipment: ANY_OPTION, type: ANY_OPTION })
+        .length,
+      EXERCISES.length,
+    )
+  })
+
+  it('filters by difficulty', () => {
+    const results = filterExercises(EXERCISES, { difficulty: 'Beginner' })
+    assert.ok(results.length > 0)
+    assert.ok(results.every((exercise) => exercise.difficulty === 'Beginner'))
+  })
+
+  it('filters by equipment', () => {
+    const results = filterExercises(EXERCISES, { equipment: 'Dumbbell' })
+    assert.ok(results.length > 0)
+    assert.ok(results.every((exercise) => exercise.equipment === 'Dumbbell'))
+  })
+
+  it('filters by exercise type', () => {
+    const results = filterExercises(EXERCISES, { type: 'Cardio' })
+    assert.ok(results.length > 0)
+    assert.ok(results.every((exercise) => exercise.type === 'Cardio'))
+  })
+
+  it('combines filters with AND', () => {
+    const legs = filterExercises(EXERCISES, { category: 'Legs' })
+    const combined = filterExercises(EXERCISES, {
+      category: 'Legs',
+      difficulty: 'Beginner',
+      equipment: 'Bodyweight',
+    })
+    assert.ok(combined.length > 0)
+    assert.ok(combined.length < legs.length)
+    assert.ok(
+      combined.every(
+        (exercise) =>
+          exercise.category === 'Legs' &&
+          exercise.difficulty === 'Beginner' &&
+          exercise.equipment === 'Bodyweight',
+      ),
+    )
+  })
+
+  it('can combine with a search term', () => {
+    const searched = searchExercises(EXERCISES, 'stretch')
+    const results = filterExercises(searched, { difficulty: 'Beginner' })
+    assert.ok(results.length > 0)
+    assert.ok(results.every((exercise) => exercise.difficulty === 'Beginner'))
+    assert.ok(results.every((exercise) => searched.includes(exercise)))
+  })
+
+  it('returns nothing for a combination that cannot match', () => {
+    assert.deepEqual(filterExercises(EXERCISES, { category: 'Legs', equipment: 'Barbell' }), [])
+  })
+
+  it('ignores an unknown filter value rather than hiding everything', () => {
+    assert.equal(filterExercises(EXERCISES, { difficulty: 'Sideways' }).length, 0)
+    assert.equal(filterExercises(EXERCISES, { category: '' }).length, EXERCISES.length)
+  })
+
+  it('counts and detects active filters', () => {
+    assert.equal(activeFilterCount(DEFAULT_FILTERS), 0)
+    assert.equal(activeFilterCount({ ...DEFAULT_FILTERS, difficulty: 'Beginner' }), 1)
+    assert.equal(
+      activeFilterCount({ category: 'Legs', difficulty: 'Beginner', equipment: 'Dumbbell' }),
+      3,
+    )
+    assert.equal(EXERCISE_FILTERS.length, 4)
+  })
+
+  it('knows when a search term or filter is active', () => {
+    assert.equal(isExerciseQueryActive(DEFAULT_FILTERS), false)
+    assert.equal(isExerciseQueryActive(DEFAULT_FILTERS, '  '), false)
+    assert.equal(isExerciseQueryActive(DEFAULT_FILTERS, 'chest'), true)
+    assert.equal(isExerciseQueryActive({ equipment: 'Barbell' }), true)
+  })
+
+  it('never mutates the source catalog', () => {
+    const before = EXERCISES.length
+    filterExercises(EXERCISES, { category: 'Core' })
+    assert.equal(EXERCISES.length, before)
+  })
+})
+
+describe('related exercises', () => {
+  it('never includes the exercise itself', () => {
+    const related = getRelatedExercises(getExerciseById('push-up'))
+    assert.ok(related.length > 0)
+    assert.ok(related.every((exercise) => exercise.id !== 'push-up'))
+  })
+
+  it('prefers the same category', () => {
+    const related = getRelatedExercises(getExerciseById('push-up'))
+    const fromCategory = related.filter((exercise) => exercise.category === 'Chest')
+    assert.ok(fromCategory.length > 0)
+  })
+
+  it('surfaces movements that share a target muscle', () => {
+    const plank = getExerciseById('plank')
+    const related = getRelatedExercises(plank)
+    const muscles = plank.targetMuscles
+    assert.ok(
+      related.some((exercise) =>
+        exercise.targetMuscles.some((muscle) => muscles.includes(muscle)),
+      ),
+    )
+  })
+
+  it('respects the limit', () => {
+    assert.equal(getRelatedExercises(getExerciseById('pull-up'), 2).length, 2)
+    assert.ok(getRelatedExercises(getExerciseById('pull-up'), 4).length <= 4)
+  })
+
+  it('is deterministic for the same exercise', () => {
+    const plank = getExerciseById('plank')
+    assert.deepEqual(getRelatedExercises(plank), getRelatedExercises(plank))
+  })
+
+  it('returns nothing for a missing exercise', () => {
+    assert.deepEqual(getRelatedExercises(null), [])
+    assert.deepEqual(getRelatedExercises({ id: 'ghost' }, 4, []), [])
+  })
+
+  it('ignores movements with nothing in common', () => {
+    assert.deepEqual(getRelatedExercises(getExerciseById('running'), 4, [getExerciseById('running')]), [])
   })
 })
 
