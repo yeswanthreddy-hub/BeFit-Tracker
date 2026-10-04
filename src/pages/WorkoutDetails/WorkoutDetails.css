@@ -1,0 +1,214 @@
+/* =========================================================
+   BeFit workout detail page
+   ========================================================= */
+
+.workout-detail {
+  gap: var(--spacing-md);
+  animation: befit-fade-up 520ms var(--ease-out) both;
+}
+
+.workout-detail__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 8px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform var(--transition-fast), color var(--transition-fast),
+    background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.workout-detail__back:hover {
+  color: var(--color-text);
+  background: var(--color-surface-elevated);
+  border-color: var(--color-border-strong);
+  transform: translateX(-3px);
+}
+
+/* ---------- hero ---------- */
+
+.workout-detail__hero {
+  display: grid;
+  gap: var(--spacing-md);
+}
+
+.workout-detail__panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: var(--spacing-lg) var(--spacing-md);
+  text-align: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background:
+    radial-gradient(140% 100% at 50% 0%, rgba(185, 243, 74, 0.1), transparent 68%),
+    linear-gradient(180deg, var(--color-surface-elevated), var(--color-surface));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), var(--shadow-card);
+  transform-style: preserve-3d;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal),
+    border-color var(--transition-normal);
+}
+
+/* Layered depth: a soft floor shadow under the mark plus a faint rim light,
+   so the panel reads as a raised object rather than a flat panel. */
+.workout-detail__panel::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 30px;
+  width: 52%;
+  height: 24px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(185, 243, 74, 0.18), transparent 75%);
+  pointer-events: none;
+}
+
+.workout-detail__panel:hover {
+  transform: translateY(-4px) rotateY(-2deg);
+  border-color: var(--color-border-strong);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 28px 52px rgba(0, 0, 0, 0.45);
+}
+
+.workout-detail__eyebrow {
+  margin: 0;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-dim);
+  color: var(--color-primary);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.workout-detail__title {
+  margin: 0 0 var(--spacing-xs);
+  font-size: clamp(1.9rem, 5vw, 2.9rem);
+}
+
+.workout-detail__description {
+  margin: 0;
+  max-width: 58ch;
+  font-size: 1.02rem;
+  line-height: 1.65;
+  color: var(--color-text-muted);
+}
+
+/* ---------- intro / overview ---------- */
+
+.workout-detail__intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.workout-detail__stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-xs) var(--spacing-sm);
+  margin: 0;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.workout-detail__stat dt {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+
+.workout-detail__stat dd {
+  margin: 2px 0 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.workout-detail__meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.workout-detail__muscles-title {
+  margin: 0 0 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+
+.workout-detail__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workout-detail__cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-xs) var(--spacing-sm);
+}
+
+.workout-detail__cta-note {
+  flex: 1 1 22ch;
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--color-text-muted);
+}
+
+/* ---------- plan ---------- */
+
+.workout-detail__plan {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+/* ---------- responsive ---------- */
+
+@media (min-width: 900px) {
+  .workout-detail__hero {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    align-items: stretch;
+  }
+
+  .workout-detail__panel {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 560px) {
+  .workout-detail__stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .workout-detail__cta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workout-detail__panel:hover,
+  .workout-detail__back:hover {
+    transform: none;
+  }
+}

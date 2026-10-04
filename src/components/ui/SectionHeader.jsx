@@ -5,6 +5,7 @@ function SectionHeader({
   action,
   split = false,
   className = '',
+  titleAs: TitleTag = 'h2',
 }) {
   const classes = ['section-header', split ? 'section-header--split' : '', className]
     .filter(Boolean)
@@ -14,7 +15,7 @@ function SectionHeader({
     <div className={classes}>
       <div>
         {eyebrow && <p className="section-header__eyebrow">{eyebrow}</p>}
-        <h2 className="section-header__title">{title}</h2>
+        <TitleTag className="section-header__title">{title}</TitleTag>
         {sub && <p className="section-header__sub">{sub}</p>}
       </div>
       {action && <div className="section-header__action">{action}</div>}

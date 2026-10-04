@@ -15,8 +15,8 @@ import OnboardingPage from './pages/OnboardingPage'
 import DashboardPage from './pages/DashboardPage'
 import ExercisesPage from './pages/ExercisesPage'
 import ExerciseDetailsPage from './pages/ExerciseDetailsPage'
-import WorkoutLibraryPage from './pages/WorkoutLibraryPage'
-import WorkoutSessionPage from './pages/WorkoutSessionPage'
+import Workouts from './pages/Workouts/Workouts'
+import WorkoutDetails from './pages/WorkoutDetails/WorkoutDetails'
 import CompletedWorkoutsPage from './pages/CompletedWorkoutsPage'
 import DietPage from './pages/DietPage'
 import ProgressPage from './pages/ProgressPage'
@@ -70,8 +70,8 @@ function App() {
               />
               <Route path="/exercises" element={<ExercisesPage />} />
               <Route path="/exercises/:exerciseId" element={<ExerciseDetailsPage />} />
-              <Route path="/workouts" element={<WorkoutLibraryPage />} />
-              <Route path="/workouts/:workoutId" element={<WorkoutSessionPage />} />
+              <Route path="/workouts" element={<Workouts />} />
+              <Route path="/workouts/:workoutId" element={<WorkoutDetails />} />
               <Route path="/completed" element={<CompletedWorkoutsPage />} />
               <Route path="/diet" element={<DietPage />} />
               <Route path="/progress" element={<ProgressPage />} />
