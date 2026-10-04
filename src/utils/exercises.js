@@ -58,6 +58,22 @@ export function primaryMuscle(exercise) {
 }
 
 /**
+ * "Core · Obliques" style line for compact rows.
+ *
+ * The primary muscle is dropped when it only repeats the category, so a plank
+ * reads "Core · 3 sets × 10 reps" instead of "Core · Core · ...".
+ *
+ * @param {import('../data/exercises.js').Exercise} exercise
+ * @returns {string}
+ */
+export function exerciseSubtitle(exercise) {
+  const category = exercise?.category ?? ''
+  const muscle = primaryMuscle(exercise)
+
+  return muscle === '' || muscle === category ? category : `${category} · ${muscle}`
+}
+
+/**
  * Every distinct value a field actually uses, in catalog order.
  *
  * Useful for future features (workout builder dropdowns) that need the real

@@ -273,6 +273,92 @@ export function estimateWorkoutMinutes(exercises) {
   return Math.max(1, Math.round(seconds / 60))
 }
 
+/**
+ * How one movement's equipment maps onto a workout's equipment.
+ *
+ * The workout scale is coarser on purpose (see `WORKOUT_EQUIPMENT`): a plan
+ * built from a barbell curl needs "Gym Equipment", not "Barbell".
+ */
+const WORKOUT_EQUIPMENT_BY_EXERCISE = Object.freeze({
+  Bodyweight: 'No Equipment',
+  Dumbbell: 'Dumbbells',
+  Barbell: 'Gym Equipment',
+  Machine: 'Gym Equipment',
+  'Resistance Band': 'Resistance Band',
+})
+
+/** Most demanding first: a plan is only "no equipment" when nothing needs gear. */
+const EQUIPMENT_PRIORITY = ['Gym Equipment', 'Dumbbells', 'Resistance Band', 'No Equipment']
+
+/**
+ * The equipment a plan needs, derived from its movements.
+ *
+ * Derived rather than typed so the builder cannot contradict itself by saving
+ * "No Equipment" for a plan full of dumbbell presses.
+ *
+ * @param {Array<{equipment?: string}>} exercises catalog exercises
+ * @returns {string} one of `WORKOUT_EQUIPMENT`
+ */
+export function deriveWorkoutEquipment(exercises) {
+  const needed = (Array.isArray(exercises) ? exercises : [])
+    .map((exercise) => WORKOUT_EQUIPMENT_BY_EXERCISE[exercise?.equipment])
+    .filter(Boolean)
+
+  if (needed.length === 0) return 'No Equipment'
+  return EQUIPMENT_PRIORITY.find((value) => needed.includes(value)) ?? 'No Equipment'
+}
+
+/** Keep the chip row readable on a plan that trains a lot of muscles. */
+const MAX_DERIVED_MUSCLES = 6
+
+/**
+ * Target muscles for a plan, derived from its movements.
+ *
+ * Ordered by how many exercises train each muscle, so the muscles the plan is
+ * actually about come first.
+ *
+ * @param {Array<{targetMuscles?: string[]}>} exercises catalog exercises
+ * @returns {string[]}
+ */
+export function deriveWorkoutMuscles(exercises) {
+  const counts = new Map()
+
+  for (const exercise of Array.isArray(exercises) ? exercises : []) {
+    for (const muscle of exercise?.targetMuscles ?? []) {
+      counts.set(muscle, (counts.get(muscle) ?? 0) + 1)
+    }
+  }
+
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, MAX_DERIVED_MUSCLES)
+    .map(([muscle]) => muscle)
+}
+
+/**
+ * Everything a plan says about itself, without anyone typing it twice.
+ *
+ * The builder calls this while the athlete edits and again on save, so the
+ * duration, equipment and muscle chips on a saved custom workout always match
+ * the exercises it actually contains.
+ *
+ * @param {Array<{exerciseId: string, sets?: number, reps?: number, restSeconds?: number, durationSeconds?: number}>} entries plan entries
+ * @returns {{durationMinutes: number, equipment: string, targetMuscles: string[], exercises: Array}}
+ */
+export function deriveWorkoutPlan(entries) {
+  const plan = Array.isArray(entries) ? entries : []
+  const exercises = plan
+    .map((entry) => getExerciseById(entry?.exerciseId))
+    .filter(Boolean)
+
+  return {
+    durationMinutes: estimateWorkoutMinutes(plan),
+    equipment: deriveWorkoutEquipment(exercises),
+    targetMuscles: deriveWorkoutMuscles(exercises),
+    exercises,
+  }
+}
+
 export {
   ANY_OPTION,
   WORKOUT_CATEGORY_NAMES,

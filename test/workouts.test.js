@@ -21,6 +21,9 @@ import {
   DURATION_RANGES,
   activeWorkoutFilterCount,
   countWorkoutsByCategory,
+  deriveWorkoutEquipment,
+  deriveWorkoutMuscles,
+  deriveWorkoutPlan,
   estimateWorkoutMinutes,
   filterWorkouts,
   getQuickWorkouts,
@@ -38,6 +41,7 @@ import {
   createCustomWorkout,
   createCustomWorkoutId,
   createWorkoutDraft,
+  createWorkoutEntry,
   getCustomWorkout,
   isCustomWorkout,
   normalizeCustomWorkout,
@@ -45,6 +49,7 @@ import {
   normalizeWorkoutEntry,
   normalizeWorkoutExercises,
   removeCustomWorkout,
+  updateCustomWorkout,
   upsertCustomWorkout,
   validateWorkoutDraft,
   validateWorkoutEntry,
@@ -611,5 +616,155 @@ describe('validating the workout builder', () => {
 
     assert.deepEqual(errors.fields['entry-1'], [WORKOUT_MESSAGES.setsInvalid])
     assert.equal(errors.fields['entry-0'], undefined)
+  })
+})
+describe('workout builder derivations', () => {
+  const plank = getExerciseById('plank')
+  const dumbbellRow = EXERCISES.find((exercise) => exercise.equipment === 'Dumbbell')
+  const barbellRow = EXERCISES.find((exercise) => exercise.equipment === 'Barbell')
+  const bandRow = EXERCISES.find((exercise) => exercise.equipment === 'Resistance Band')
+
+  it('reads equipment from the exercises instead of the athlete', () => {
+    assert.equal(deriveWorkoutEquipment([plank]), 'No Equipment')
+    assert.equal(deriveWorkoutEquipment([dumbbellRow, plank]), 'Dumbbells')
+    assert.equal(deriveWorkoutEquipment([dumbbellRow, bandRow]), 'Dumbbells')
+    assert.equal(deriveWorkoutEquipment([bandRow]), 'Resistance Band')
+    assert.equal(deriveWorkoutEquipment([]), 'No Equipment')
+  })
+
+  it('treats a barbell or machine plan as gym equipment', () => {
+    const machineRow = EXERCISES.find((exercise) => exercise.equipment === 'Machine') ?? barbellRow
+
+    assert.equal(deriveWorkoutEquipment([plank, machineRow]), 'Gym Equipment')
+    assert.equal(deriveWorkoutEquipment([plank, barbellRow]), 'Gym Equipment')
+  })
+
+  it('orders target muscles by how often the plan trains them', () => {
+    const muscles = deriveWorkoutMuscles([plank, plank, dumbbellRow])
+
+    // The plank appears twice, so every muscle it trains outranks the dumbbell's.
+    assert.deepEqual(
+      muscles.slice(0, plank.targetMuscles.length).sort(),
+      [...plank.targetMuscles].sort(),
+    )
+    assert.equal(muscles.length, new Set(muscles).size)
+    assert.deepEqual(deriveWorkoutMuscles([]), [])
+  })
+
+  it('ignores unknown exercise ids when deriving', () => {
+    const plan = deriveWorkoutPlan([
+      { exerciseId: 'not-an-exercise', sets: 3, reps: 10, restSeconds: 30 },
+      { exerciseId: plank.id, sets: 3, reps: 10, restSeconds: 30 },
+    ])
+
+    assert.equal(plan.exercises.length, 1)
+    assert.deepEqual(plan.targetMuscles, deriveWorkoutMuscles([plank]))
+    assert.equal(plan.equipment, 'No Equipment')
+  })
+
+  it('derives duration, equipment and muscles for a whole plan', () => {
+    const entries = [
+      { exerciseId: plank.id, sets: 3, reps: 10, restSeconds: 45 },
+      { exerciseId: dumbbellRow.id, sets: 4, reps: 8, restSeconds: 60 },
+    ]
+
+    assert.deepEqual(deriveWorkoutPlan(entries), {
+      durationMinutes: estimateWorkoutMinutes(entries),
+      equipment: 'Dumbbells',
+      targetMuscles: deriveWorkoutMuscles([plank, dumbbellRow]),
+      exercises: [plank, dumbbellRow],
+    })
+  })
+
+  it('reports an empty plan honestly', () => {
+    assert.deepEqual(deriveWorkoutPlan([]), {
+      durationMinutes: 0,
+      equipment: 'No Equipment',
+      targetMuscles: [],
+      exercises: [],
+    })
+    assert.equal(estimateWorkoutMinutes([]), 0)
+  })
+})
+
+describe('saving a workout from the builder', () => {
+  it('creates a plan entry with sensible starting numbers', () => {
+    assert.deepEqual(createWorkoutEntry('plank'), {
+      exerciseId: 'plank',
+      sets: 3,
+      reps: 10,
+      restSeconds: 45,
+      durationSeconds: 0,
+    })
+    assert.equal(createWorkoutEntry('plank', { sets: 5 }).sets, 5)
+    assert.equal(createWorkoutEntry(''), null)
+  })
+
+  it('keeps the id and creation date when a workout is edited', () => {
+    const created = createCustomWorkout(
+      { name: 'Saturday Upper', exercises: [createWorkoutEntry('plank')] },
+      new Date('2026-01-01T09:00:00.000Z'),
+    )
+    const edited = updateCustomWorkout(
+      created,
+      { ...created, name: 'Saturday Upper Body', exercises: [createWorkoutEntry('push-up')] },
+      new Date('2026-02-02T10:00:00.000Z'),
+    )
+
+    assert.equal(edited.id, created.id)
+    assert.equal(edited.createdAt, created.createdAt)
+    assert.equal(edited.updatedAt, '2026-02-02T10:00:00.000Z')
+    assert.equal(edited.name, 'Saturday Upper Body')
+    assert.deepEqual(edited.exercises, [createWorkoutEntry('push-up')])
+    assert.ok(isCustomWorkout(edited))
+  })
+
+  it('refuses to edit a workout that does not exist', () => {
+    assert.equal(updateCustomWorkout(null, { name: 'Nothing' }), null)
+  })
+
+  it('keeps a list free of duplicates when the same workout is saved twice', () => {
+    const workout = createCustomWorkout({ name: 'Legs', exercises: [createWorkoutEntry('plank')] })
+    const list = upsertCustomWorkout([], workout)
+
+    assert.equal(list.length, 1)
+    assert.equal(upsertCustomWorkout(list, updateCustomWorkout(workout, { ...workout, name: 'Legs v2' })).length, 1)
+    assert.equal(upsertCustomWorkout(list, { ...workout, name: '' }).length, 1)
+    assert.equal(removeCustomWorkout(list, workout.id).length, 0)
+  })
+
+  it('starts a draft without a plan and keeps validation honest', () => {
+    const draft = createWorkoutDraft()
+
+    assert.deepEqual(draft, { ...DEFAULT_WORKOUT_DRAFT, exercises: [] })
+    assert.equal(validateWorkoutDraft(draft).exercises, WORKOUT_MESSAGES.exerciseRequired)
+    assert.deepEqual(
+      validateWorkoutDraft({
+        ...draft,
+        name: 'Legs',
+        exercises: [createWorkoutEntry('plank')],
+      }),
+      {},
+    )
+  })
+
+  it('drops the reps of a timed hold so no stale rep count survives', () => {
+    const entry = normalizeWorkoutEntry({
+      exerciseId: 'plank',
+      sets: 3,
+      reps: 12,
+      restSeconds: 30,
+      durationSeconds: 45,
+    })
+
+    assert.equal(entry.reps, 0)
+    assert.equal(entry.durationSeconds, 45)
+    assert.equal(workoutVolumeLabel(entry), '3 sets × 45s hold')
+    assert.deepEqual(validateWorkoutEntry(entry), [])
+  })
+
+  it('keeps reps for counted work', () => {
+    assert.equal(createWorkoutEntry('push-up').reps, 10)
+    assert.equal(workoutVolumeLabel(createWorkoutEntry('push-up')), '3 sets × 10 reps')
   })
 })

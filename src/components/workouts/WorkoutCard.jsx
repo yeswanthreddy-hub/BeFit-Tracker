@@ -83,7 +83,11 @@ function WorkoutCard({ workout, startHref }) {
           View details
           <span aria-hidden="true"> →</span>
         </Button>
-        <Button to={startHref ?? `/workouts/${workout.id}`} size="sm" className="workout-card__cta">
+        <Button
+          to={startHref ?? `/workouts/${workout.id}/start`}
+          size="sm"
+          className="workout-card__cta"
+        >
           Start workout
         </Button>
       </div>

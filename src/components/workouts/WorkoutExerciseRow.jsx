@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import DifficultyBadge from '../exercises/DifficultyBadge'
 import { workoutVolumeLabel } from '../../utils/workouts'
-import { primaryMuscle } from '../../utils/exercises'
+import { exerciseSubtitle } from '../../utils/exercises'
 
 /**
  * One exercise inside a workout's plan.
@@ -27,11 +27,11 @@ function WorkoutExerciseRow({ entry, index, showLink = true }) {
 
       <div className="workout-row__body">
         <h4 className="workout-row__name">{exercise.name}</h4>
-        <p className="workout-row__meta">
-          <span className="workout-row__category">{exercise.category}</span>
-          <span aria-hidden="true">·</span>
-          <span>{primaryMuscle(exercise)}</span>
-        </p>
+<p className="workout-row__meta">
+            <span className="workout-row__category">{exerciseSubtitle(exercise)}</span>
+            <span aria-hidden="true">·</span>
+            <span>{workoutVolumeLabel(entry)}</span>
+          </p>
         {exercise.targetMuscles.length > 1 && (
           <p className="workout-row__muscles">
             {exercise.targetMuscles.join(', ')}

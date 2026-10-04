@@ -1,0 +1,102 @@
+/* =========================================================
+   BeFit workout preparation stage
+   ========================================================= */
+
+.workout-prepare {
+  gap: var(--spacing-md);
+  animation: befit-fade-up 520ms var(--ease-out) both;
+}
+
+/* ---------- hero ---------- */
+
+.workout-prepare__hero {
+  display: grid;
+  gap: var(--spacing-md);
+}
+
+.workout-prepare__panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: var(--spacing-lg) var(--spacing-md);
+  text-align: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background:
+    radial-gradient(140% 100% at 50% 0%, rgba(42, 200, 180, 0.12), transparent 68%),
+    linear-gradient(180deg, var(--color-surface-elevated), var(--color-surface));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), var(--shadow-card);
+}
+
+.workout-prepare__eyebrow {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.workout-prepare__title {
+  margin: 0;
+  font-size: clamp(1.7rem, 4.4vw, 2.4rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.workout-prepare__summary {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+}
+
+.workout-prepare__start {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  justify-content: center;
+}
+
+.workout-prepare__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-xs) var(--spacing-sm);
+}
+
+.workout-prepare__note {
+  margin: 0;
+  padding: var(--spacing-sm);
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  background: rgba(42, 200, 180, 0.08);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+}
+
+/* ---------- plan ---------- */
+
+.workout-prepare__plan {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+/* ---------- responsive ---------- */
+
+@media (min-width: 900px) {
+  .workout-prepare__hero {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 560px) {
+  .workout-prepare__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

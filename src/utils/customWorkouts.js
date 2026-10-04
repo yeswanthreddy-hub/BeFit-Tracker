@@ -93,7 +93,8 @@ function pickOne(value, allowed, fallback) {
  * Clean one plan entry (`{ exerciseId, sets, reps, restSeconds }`).
  *
  * Numbers are clamped rather than rejected so a corrupt payload can never
- * render a row with "NaN reps" or a zero-set exercise.
+ * render a row with "NaN reps" or a zero-set exercise. A timed hold drops its
+ * reps entirely, because "1 rep" of a plank is meaningless.
  *
  * @param {unknown} entry
  * @returns {{exerciseId: string, sets: number, reps: number, restSeconds: number, durationSeconds: number}|null}
@@ -102,12 +103,16 @@ export function normalizeWorkoutEntry(entry) {
   const exerciseId = toText(entry?.exerciseId)
   if (exerciseId === '') return null
 
+  const durationSeconds = clampWholeNumber(entry?.durationSeconds, 0, 600, 0)
+
   return {
     exerciseId,
     sets: clampWholeNumber(entry?.sets, 1, 20, DEFAULT_SETS),
-    reps: clampWholeNumber(entry?.reps, 1, 200, DEFAULT_REPS),
+    // A timed hold has no reps at all, so they are dropped rather than left
+    // behind as a stale "1 rep" that no screen ever shows.
+    reps: durationSeconds > 0 ? 0 : clampWholeNumber(entry?.reps, 1, 200, DEFAULT_REPS),
     restSeconds: clampWholeNumber(entry?.restSeconds, 0, 600, DEFAULT_REST_SECONDS),
-    durationSeconds: clampWholeNumber(entry?.durationSeconds, 0, 600, 0),
+    durationSeconds,
   }
 }
 
@@ -199,6 +204,49 @@ export function normalizeCustomWorkouts(value) {
 /** The builder's blank draft. */
 export function createWorkoutDraft() {
   return { ...DEFAULT_WORKOUT_DRAFT, exercises: [] }
+}
+
+/**
+ * One plan entry with sensible starting numbers.
+ *
+ * Used when an exercise is added in the builder, and when the builder starts
+ * from the temporary exercise selection.
+ *
+ * @param {string} exerciseId
+ * @param {Partial<{sets: number, reps: number, restSeconds: number, durationSeconds: number}>} [overrides]
+ * @returns {{exerciseId: string, sets: number, reps: number, restSeconds: number, durationSeconds: number}|null}
+ */
+export function createWorkoutEntry(exerciseId, overrides = {}) {
+  return normalizeWorkoutEntry({
+    exerciseId,
+    sets: DEFAULT_SETS,
+    reps: DEFAULT_REPS,
+    restSeconds: DEFAULT_REST_SECONDS,
+    ...overrides,
+  })
+}
+
+/**
+ * Apply an edit to a saved workout.
+ *
+ * The id and `createdAt` are preserved, so an edit never makes a workout look
+ * new, and `updatedAt` moves forward instead.
+ *
+ * @param {object} existing the workout as it is stored today
+ * @param {object} draft the builder's current form values
+ * @param {Date} [now]
+ * @returns {object|null} `null` when the draft is unusable or there is nothing to edit
+ */
+export function updateCustomWorkout(existing, draft = {}, now = new Date()) {
+  if (!existing?.id) return null
+
+  return normalizeCustomWorkout({
+    ...draft,
+    id: existing.id,
+    type: CUSTOM_WORKOUT_TYPE,
+    createdAt: existing.createdAt,
+    updatedAt: now.toISOString(),
+  })
 }
 
 /**

@@ -17,6 +17,8 @@ import ExercisesPage from './pages/ExercisesPage'
 import ExerciseDetailsPage from './pages/ExerciseDetailsPage'
 import Workouts from './pages/Workouts/Workouts'
 import WorkoutDetails from './pages/WorkoutDetails/WorkoutDetails'
+import WorkoutPrepare from './pages/WorkoutPrepare/WorkoutPrepare'
+import WorkoutBuilder from './pages/WorkoutBuilder/WorkoutBuilder'
 import CompletedWorkoutsPage from './pages/CompletedWorkoutsPage'
 import DietPage from './pages/DietPage'
 import ProgressPage from './pages/ProgressPage'
@@ -71,7 +73,24 @@ function App() {
               <Route path="/exercises" element={<ExercisesPage />} />
               <Route path="/exercises/:exerciseId" element={<ExerciseDetailsPage />} />
               <Route path="/workouts" element={<Workouts />} />
+              <Route
+                path="/workouts/create"
+                element={
+                  <ProtectedRoute>
+                    <WorkoutBuilder />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/workouts/edit/:workoutId"
+                element={
+                  <ProtectedRoute>
+                    <WorkoutBuilder />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/workouts/:workoutId" element={<WorkoutDetails />} />
+              <Route path="/workouts/:workoutId/start" element={<WorkoutPrepare />} />
               <Route path="/completed" element={<CompletedWorkoutsPage />} />
               <Route path="/diet" element={<DietPage />} />
               <Route path="/progress" element={<ProgressPage />} />

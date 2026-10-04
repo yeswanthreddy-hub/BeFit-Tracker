@@ -33,6 +33,7 @@ import {
   getExercisesByCategory,
   getRelatedExercises,
   isExerciseQueryActive,
+  exerciseSubtitle,
   matchesExerciseQuery,
   normalizeQuery,
   primaryMuscle,
@@ -41,6 +42,19 @@ import {
 } from '../src/utils/exercises.js'
 
 describe('exercise catalog', () => {
+  it('never repeats a category as the primary muscle in a compact row', () => {
+    for (const exercise of EXERCISES) {
+      const subtitle = exerciseSubtitle(exercise)
+      const parts = subtitle.split(' · ')
+
+      assert.equal(parts[0], exercise.category)
+      assert.ok(parts.length <= 2, `${exercise.name} subtitle repeats a value: ${subtitle}`)
+      assert.notEqual(parts[1], exercise.category)
+    }
+
+    assert.equal(exerciseSubtitle(undefined), '')
+  })
+
   it('ships every requested movement', () => {
     const ids = EXERCISES.map((exercise) => exercise.id)
     const required = [

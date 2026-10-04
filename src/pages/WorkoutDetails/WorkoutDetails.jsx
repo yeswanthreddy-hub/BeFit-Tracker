@@ -118,15 +118,12 @@ function WorkoutDetails() {
         </div>
       </header>
 
-      <section className="workout-detail__plan" aria-labelledby="workout-plan-heading">
+      <section className="workout-detail__plan" aria-label="Exercises in this workout">
         <SectionHeader
           eyebrow="The plan"
           title="Exercises in this workout"
           sub="Open any movement for full instructions, form tips and related exercises."
         />
-        <h2 className="visually-hidden" id="workout-plan-heading">
-          Exercises in {workout.name}
-        </h2>
         <WorkoutExerciseList workout={workout} />
       </section>
     </div>
