@@ -20,6 +20,7 @@ export const NAV_LINKS = [
 /** Landing-page navigation for a signed-in athlete. */
 export const ACCOUNT_LINKS = [
   { to: '/dashboard', label: 'Dashboard' },
+  { to: '/exercises', label: 'Exercises' },
   { to: '/workouts', label: 'Workouts' },
   { to: '/progress', label: 'Progress' },
   { to: '/settings', label: 'Profile / Settings' },

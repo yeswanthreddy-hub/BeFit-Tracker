@@ -78,6 +78,22 @@ future workout builder can all read one structure:
 - The exported catalog is deeply frozen, so filtering and sorting can never
   mutate the source records.
 
+### Workout selection (foundation)
+
+Browsing an exercise can add it to a temporary workout selection that the future
+workout builder will read.
+
+| Key | Contents |
+| --- | --- |
+| `befit_workout_builder` | `[{ exerciseId, addedAt }]` — scoped per account as `befit_u_<userId>_workout_builder` once someone is signed in |
+
+- Adding is idempotent, the order added is preserved, and a corrupt payload
+  degrades to an empty selection instead of breaking the library.
+- Selecting an exercise is **not** performing it: no sets, reps, calories,
+  streak or completed-workout data is written.
+- Pure rules live in `src/utils/workoutSelection.js`; `useWorkoutSelection`
+  adds the storage and toast behaviour on top.
+
 ## Scripts
 
 ```bash
@@ -103,7 +119,8 @@ npm test
 | `test/validation.test.js` | Email/password/name rules, register + login form errors, first-invalid-field focus order |
 | `test/authService.test.js` | Registration, duplicate emails, sign-in/out, session shape, profile writes, and recovery from corrupt `localStorage` |
 | `test/storage.test.js` | JSON round-trips, corrupt-value fallbacks, `befit_` prefix isolation, no-storage degradation |
-| `test/exercises.test.js` | Catalog integrity (unique ids/names, valid categories and vocabularies, complete records) and the exercise lookup helpers |
+| `test/exercises.test.js` | Catalog integrity (unique ids/names, valid categories and vocabularies, complete records) plus search, combined filtering and related-exercise ranking |
+| `test/workoutSelection.test.js` | Add / remove / toggle / clear rules, corrupt-payload recovery, selection storage key and per-account scoping |
 
 A localStorage stub in `test/helpers/browser.js` stands in for the browser, so
 the real service and utility code is exercised rather than a reimplementation.

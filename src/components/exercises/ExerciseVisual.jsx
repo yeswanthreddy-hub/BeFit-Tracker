@@ -9,7 +9,9 @@ import { getExerciseCategoryOrFallback } from '../../data/exerciseCategories'
  * It is deterministic, weighs nothing, scales to any size and always looks
  * intentional.
  *
- * Region shapes are keyed by the `icon` field of `src/data/exerciseCategories.js`.
+ * Region shapes are keyed by the `icon` field of `src/data/exerciseCategories.js`,
+ * and every key is unique across groups so the combined full-body figure
+ * reconciles without React complaining about duplicates.
  */
 
 const FIGURE = (
@@ -25,45 +27,45 @@ const FIGURE = (
 )
 
 const CHEST = [
-  <ellipse key="l" cx="52" cy="50" rx="8" ry="7" />,
-  <ellipse key="r" cx="68" cy="50" rx="8" ry="7" />,
+  <ellipse key="chest-l" cx="52" cy="50" rx="8" ry="7" />,
+  <ellipse key="chest-r" cx="68" cy="50" rx="8" ry="7" />,
 ]
 
 const BACK = [
-  <rect key="spine" x="57" y="36" width="6" height="50" rx="3" />,
-  <ellipse key="l" cx="51" cy="42" rx="7" ry="5" />,
-  <ellipse key="r" cx="69" cy="42" rx="7" ry="5" />,
+  <rect key="back-spine" x="57" y="36" width="6" height="50" rx="3" />,
+  <ellipse key="back-l" cx="51" cy="42" rx="7" ry="5" />,
+  <ellipse key="back-r" cx="69" cy="42" rx="7" ry="5" />,
 ]
 
 const SHOULDERS = [
-  <circle key="l" cx="38" cy="42" r="9" />,
-  <circle key="r" cx="82" cy="42" r="9" />,
+  <circle key="shoulders-l" cx="38" cy="42" r="9" />,
+  <circle key="shoulders-r" cx="82" cy="42" r="9" />,
 ]
 
 const ARMS = [
-  <rect key="l" x="27" y="44" width="12" height="38" rx="6" />,
-  <rect key="r" x="81" y="44" width="12" height="38" rx="6" />,
+  <rect key="arms-l" x="27" y="44" width="12" height="38" rx="6" />,
+  <rect key="arms-r" x="81" y="44" width="12" height="38" rx="6" />,
 ]
 
 const LEGS = [
-  <rect key="l" x="47" y="96" width="12" height="36" rx="6" />,
-  <rect key="r" x="61" y="96" width="12" height="36" rx="6" />,
+  <rect key="legs-l" x="47" y="96" width="12" height="36" rx="6" />,
+  <rect key="legs-r" x="61" y="96" width="12" height="36" rx="6" />,
 ]
 
 const CORE = [
-  <rect key="abs" x="51" y="56" width="18" height="26" rx="9" />,
+  <rect key="core-abs" x="51" y="56" width="18" height="26" rx="9" />,
 ]
 
 const FULL_BODY = [...CHEST, ...SHOULDERS, ...ARMS, ...CORE, ...LEGS]
 
 const CARDIO = [
   <path
-    key="pulse"
+    key="cardio-pulse"
     className="exercise-visual__stroke"
     d="M14 78h14l6-13 8 26 7-19 6 6h41"
   />,
-  <circle key="inner" className="exercise-visual__stroke" cx="60" cy="76" r="58" />,
-  <circle key="outer" className="exercise-visual__stroke" cx="60" cy="76" r="68" />
+  <circle key="cardio-inner" className="exercise-visual__stroke" cx="60" cy="76" r="58" />,
+  <circle key="cardio-outer" className="exercise-visual__stroke" cx="60" cy="76" r="68" />
 ]
 
 const REGIONS = {

@@ -8,6 +8,7 @@ import ExerciseCard from '../components/exercises/ExerciseCard'
 import ExerciseSearch from '../components/exercises/ExerciseSearch'
 import ExerciseFilters from '../components/exercises/ExerciseFilters'
 import CategorySelector from '../components/exercises/CategorySelector'
+import WorkoutSelectionBar from '../components/exercises/WorkoutSelectionBar'
 import { EXERCISES } from '../data/exercises'
 import { EXERCISE_CATEGORY_NAMES, countExercisesByCategory } from '../data/exerciseCategories'
 import {
@@ -95,6 +96,8 @@ function ExercisesPage() {
           onToggle={() => setFiltersOpen((open) => !open)}
         />
       </div>
+
+      <WorkoutSelectionBar />
 
       <div className="exercise-library__summary">
         <p className="exercise-library__count" role="status">

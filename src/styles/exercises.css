@@ -488,6 +488,7 @@
 }
 
 .exercise-detail__panel {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -500,6 +501,29 @@
     linear-gradient(180deg, var(--color-surface-elevated), var(--color-surface));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), var(--shadow-card);
   transform-style: preserve-3d;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal),
+    border-color var(--transition-normal);
+}
+
+/* Layered depth: a soft floor shadow under the figure plus a faint rim light,
+   so the panel reads as a raised object rather than a flat panel. */
+.exercise-detail__panel::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 26px;
+  width: 58%;
+  height: 26px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(185, 243, 74, 0.18), transparent 75%);
+  pointer-events: none;
+}
+
+.exercise-detail__panel:hover {
+  transform: translateY(-4px) rotateY(-2deg);
+  border-color: var(--color-border-strong);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 28px 52px rgba(0, 0, 0, 0.45);
 }
 
 .exercise-detail__panel-note {
@@ -707,6 +731,101 @@
   -webkit-line-clamp: 2;
 }
 
+/* ---------- workout selection ---------- */
+
+.selection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: var(--spacing-md);
+  border: 1px solid rgba(185, 243, 74, 0.28);
+  border-radius: var(--radius-card);
+  background: radial-gradient(520px 200px at 0% 0%, rgba(185, 243, 74, 0.12), transparent 70%),
+    var(--color-surface);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), var(--shadow-card);
+  animation: befit-fade-up 420ms var(--ease-out) both;
+}
+
+.selection__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-xs);
+}
+
+.selection__title {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.selection__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.selection__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px 7px 14px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.selection__item:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-primary);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
+}
+
+.selection__name {
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.selection__meta {
+  font-size: 0.75rem;
+  color: var(--color-text-faint);
+}
+
+.selection__remove {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast),
+    border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.selection__remove:hover {
+  background: rgba(255, 107, 107, 0.14);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+  transform: rotate(90deg);
+}
+
+.selection__note {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--color-text-faint);
+}
+
 /* ---------- responsive ---------- */
 
 @media (min-width: 720px) {
@@ -779,5 +898,33 @@
 
   .exercise-detail__cta .btn {
     width: 100%;
+  }
+}
+
+/* ---------- reduced motion ----------
+   The global reset already shortens durations; this also removes the 3D tilt
+   so nothing rotates or lifts for a visitor who asked for calm. */
+
+@media (prefers-reduced-motion: reduce) {
+  .exercise-card:hover,
+  .category-tab:hover,
+  .category-tab.is-active:hover,
+  .exercise-detail__panel:hover,
+  .exercise-filters__toggle:hover,
+  .selection__item:hover {
+    transform: none;
+  }
+
+  .exercise-grid > li,
+  .exercise-detail,
+  .selection {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .exercise-filters__chevron,
+  .selection__remove {
+    transition: none;
   }
 }

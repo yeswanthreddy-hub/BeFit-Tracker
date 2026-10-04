@@ -7,6 +7,8 @@ import ExerciseVisual from '../components/exercises/ExerciseVisual'
 import DifficultyBadge from '../components/exercises/DifficultyBadge'
 import InstructionSteps from '../components/exercises/InstructionSteps'
 import RelatedExercises from '../components/exercises/RelatedExercises'
+import AddToWorkoutButton from '../components/exercises/AddToWorkoutButton'
+import { useWorkoutSelection } from '../hooks/useWorkoutSelection'
 import { getExerciseById, getExerciseCategoryRecord, getRelatedExercises } from '../utils/exercises'
 
 /**
@@ -20,6 +22,7 @@ import { getExerciseById, getExerciseCategoryRecord, getRelatedExercises } from 
 function ExerciseDetailsPage() {
   const { exerciseId } = useParams()
   const exercise = getExerciseById(exerciseId)
+  const { count } = useWorkoutSelection()
 
   // Arriving from a scrolled grid should land at the top of the new page.
   useEffect(() => {
@@ -117,11 +120,14 @@ function ExerciseDetailsPage() {
           </div>
 
           <div className="exercise-detail__cta">
-            <Button to="/workouts" variant="primary" size="lg">
-              Start a workout
+            <AddToWorkoutButton exercise={exercise} size="lg" />
+            <Button to="/workouts" variant="secondary" size="lg">
+              Open workout library
             </Button>
-            <p className="exercise-detail__cta-note">
-              Add it to a session from the workout library.
+            <p className="exercise-detail__cta-note" role="status">
+              {count === 0
+                ? 'Select this movement to start building a session.'
+                : `${count} ${count === 1 ? 'exercise' : 'exercises'} in your workout selection.`}
             </p>
           </div>
         </div>
