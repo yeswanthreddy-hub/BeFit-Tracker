@@ -25,7 +25,7 @@ export const QUICK_WORKOUTS = [
     difficulty: 'Beginner',
     target: 'Core',
     description: 'Dead bugs, planks and side work to build trunk stability.',
-    focus: ['Abs/Core'],
+    focus: ['Core'],
   },
   {
     id: 'qw-20-upper',

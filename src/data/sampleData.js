@@ -118,7 +118,7 @@ export const sampleExercises = [
   createExercise({
     id: 'ex-plank',
     name: 'Plank',
-    category: 'Abs/Core',
+    category: 'Core',
     muscleGroup: 'Whole core',
     equipment: 'Bodyweight',
     difficulty: 'beginner',

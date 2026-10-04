@@ -1,3 +1,5 @@
+import { EXERCISE_CATEGORY_NAMES } from './exerciseCategories'
+
 /**
  * BeFit data models.
  *
@@ -6,16 +8,15 @@
  * never be missing required fields.
  */
 
-export const EXERCISE_CATEGORIES = [
-  'Chest',
-  'Back',
-  'Shoulders',
-  'Arms',
-  'Legs',
-  'Abs/Core',
-  'Full Body',
-  'Cardio',
-]
+/**
+ * Category names, owned by `src/data/exerciseCategories.js`.
+ *
+ * The exercise library is the authority on body categories, so this list is
+ * sourced from it rather than copied. Keeping one copy means the library
+ * filters, the landing tiles and any stored workout data can never drift
+ * apart.
+ */
+export const EXERCISE_CATEGORIES = EXERCISE_CATEGORY_NAMES
 
 export const EXPERIENCE_LEVELS = ['beginner', 'intermediate', 'advanced']
 

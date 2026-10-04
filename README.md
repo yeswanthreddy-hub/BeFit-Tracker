@@ -44,6 +44,40 @@ client-side only. It keeps honest visitors on the right screen; it is not a
 security boundary. A real deployment needs a server with hashed credentials
 and managed sessions.
 
+## Exercise library
+
+The movement catalog is application content, so it ships in code rather than
+`localStorage` — it must work for a signed-out visitor before any data exists.
+
+| Module | Contents |
+| --- | --- |
+| `src/data/exerciseCategories.js` | The eight body categories: `id`, `name`, `description`, visual `icon`, `accent` |
+| `src/data/exercises.js` | The exercise records plus the controlled vocabularies (`EXERCISE_DIFFICULTIES`, `EXERCISE_EQUIPMENT`, `EXERCISE_TYPES`) and the `defineExercise` factory |
+| `src/utils/exercises.js` | Lookups, data-quality validation and the query helpers used by the library page |
+
+Every record has the same shape, so the library grid, the detail page and the
+future workout builder can all read one structure:
+
+```js
+{
+  id, name, category,
+  targetMuscles, secondaryMuscles,
+  difficulty, equipment, type,
+  durationMinutes, description,
+  instructions, tips,
+}
+```
+
+- `/exercises` browses the catalog with category tabs, search across name,
+  muscle, category, equipment and type, and combined filters for difficulty,
+  equipment and type.
+- `/exercises/:exerciseId` renders instructions, form tips and related
+  exercises, and falls back to a not-found state for an unknown id.
+- Category names live only in `exerciseCategories.js`; `src/data/models.js`
+  re-exports that list so nothing keeps a second copy.
+- The exported catalog is deeply frozen, so filtering and sorting can never
+  mutate the source records.
+
 ## Scripts
 
 ```bash
@@ -69,6 +103,7 @@ npm test
 | `test/validation.test.js` | Email/password/name rules, register + login form errors, first-invalid-field focus order |
 | `test/authService.test.js` | Registration, duplicate emails, sign-in/out, session shape, profile writes, and recovery from corrupt `localStorage` |
 | `test/storage.test.js` | JSON round-trips, corrupt-value fallbacks, `befit_` prefix isolation, no-storage degradation |
+| `test/exercises.test.js` | Catalog integrity (unique ids/names, valid categories and vocabularies, complete records) and the exercise lookup helpers |
 
 A localStorage stub in `test/helpers/browser.js` stands in for the browser, so
 the real service and utility code is exercised rather than a reimplementation.
