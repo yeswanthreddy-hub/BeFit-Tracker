@@ -1,31 +1,46 @@
 import { useMemo, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
+
 import SectionHeader from '../components/ui/SectionHeader'
 import Button from '../components/ui/Button'
 import EmptyState from '../components/ui/EmptyState'
-import { sampleExercises } from '../data/sampleData'
-import { EXERCISE_CATEGORIES } from '../data/models'
+import ExerciseCard from '../components/exercises/ExerciseCard'
+import ExerciseSearch from '../components/exercises/ExerciseSearch'
+import CategorySelector from '../components/exercises/CategorySelector'
+import { EXERCISES } from '../data/exercises'
+import { EXERCISE_CATEGORY_NAMES, countExercisesByCategory } from '../data/exerciseCategories'
+import { exerciseCountLabel, searchExercises } from '../utils/exercises'
 
 const ALL = 'All'
 
+/**
+ * BeFit exercise library.
+ *
+ * All state is local: choosing a category or typing a search term re-derives
+ * the visible list without touching the router, so browsing stays instant.
+ * The source catalog in `src/data/exercises.js` is never mutated — only the
+ * derived view changes.
+ */
 function ExercisesPage() {
   const location = useLocation()
+
+  // The landing page links here with a category in the router state, which is
+  // how a category tile can preselect a filter.
+  const requested = location.state?.category
   const [category, setCategory] = useState(
-    location.state?.category && EXERCISE_CATEGORIES.includes(location.state.category)
-      ? location.state.category
-      : ALL,
+    EXERCISE_CATEGORY_NAMES.includes(requested) ? requested : ALL,
   )
   const [query, setQuery] = useState('')
 
+  const counts = useMemo(() => countExercisesByCategory(EXERCISES), [])
+
   const visible = useMemo(() => {
-    const term = query.trim().toLowerCase()
-    return sampleExercises.filter((exercise) => {
-      const matchesCategory = category === ALL || exercise.category === category
-      const matchesQuery =
-        term === '' || exercise.name.toLowerCase().includes(term)
-      return matchesCategory && matchesQuery
-    })
+    const byCategory =
+      category === ALL ? [...EXERCISES] : EXERCISES.filter((item) => item.category === category)
+    return searchExercises(byCategory, query)
   }, [category, query])
+
+  const isFiltered = category !== ALL || query.trim() !== ''
 
   const resetFilters = () => {
     setCategory(ALL)
@@ -33,66 +48,46 @@ function ExercisesPage() {
   }
 
   return (
-    <div className="page">
+    <div className="page exercise-library">
       <SectionHeader
         eyebrow="Exercise library"
-        title="Find your next lift"
-        sub="A small but growing catalog built on a scalable structure."
+        title="Explore Exercises"
+        sub="Find movements that fit your goals, experience and workout style."
       />
 
-      <div className="toolbar">
-        <div className="toolbar__search">
-          <label className="visually-hidden" htmlFor="exercise-search">
-            Search exercises
-          </label>
-          <input
-            id="exercise-search"
-            className="field"
-            type="search"
-            placeholder="Search exercises…"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </div>
+      <div className="exercise-library__controls card">
+        <ExerciseSearch value={query} onChange={setQuery} />
+        <CategorySelector
+          value={category}
+          onChange={setCategory}
+          counts={counts}
+          total={EXERCISES.length}
+        />
+      </div>
 
-        <div className="chip-group">
-          {[ALL, ...EXERCISE_CATEGORIES].map((item) => (
-            <button
-              key={item}
-              type="button"
-              className={item === category ? 'chip chip--filter is-active' : 'chip chip--filter'}
-              aria-pressed={item === category}
-              onClick={() => setCategory(item)}
-            >
-              {item}
-            </button>
-          ))}
-        </div>
+      <div className="exercise-library__summary">
+        <p className="exercise-library__count" role="status">
+          {exerciseCountLabel(visible.length, isFiltered)}
+        </p>
+        {isFiltered && (
+          <Button variant="ghost" size="sm" onClick={resetFilters}>
+            Clear filters
+          </Button>
+        )}
       </div>
 
       {visible.length > 0 ? (
-        <div className="grid grid--cols-3">
-          {visible.map((exercise) => (
-            <Link
-              key={exercise.id}
-              to={`/exercises/${exercise.id}`}
-              className="card card--hover exercise-card"
-            >
-              <div className="exercise-card__top">
-                <span className="chip chip--primary">{exercise.category}</span>
-                <span className="chip">{exercise.difficulty}</span>
-              </div>
-              <h3 className="card__title">{exercise.name}</h3>
-              <p className="exercise-card__meta">
-                {exercise.muscleGroup} · {exercise.equipment}
-              </p>
-            </Link>
+        <ul className="exercise-grid" key={`${category}|${query.trim().toLowerCase()}`}>
+          {visible.map((exercise, index) => (
+            <li key={exercise.id} style={{ '--reveal-index': Math.min(index, 11) }}>
+              <ExerciseCard exercise={exercise} />
+            </li>
           ))}
-        </div>
+        </ul>
       ) : (
         <EmptyState
           title="No exercises found"
-          note={`Nothing matches "${query}" in ${category}. Try a different term or clear the filters.`}
+          note="Try a different search or clear your filters to see the whole library again."
           action={
             <Button variant="secondary" onClick={resetFilters}>
               Clear filters

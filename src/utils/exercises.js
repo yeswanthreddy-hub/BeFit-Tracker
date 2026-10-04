@@ -168,4 +168,72 @@ export function findCatalogIssues(exercises = EXERCISES) {
   return issues
 }
 
-export { EXERCISE_CATEGORY_NAMES }
+/**
+ * Every field a search term is matched against.
+ *
+ * Deliberately flat: name and muscles first (what people look for), then the
+ * category, equipment and type so "bodyweight" and "mobility" behave like real
+ * filters without any extra UI.
+ */
+const SEARCHABLE_FIELDS = ['name', 'category', 'equipment', 'type', 'description']
+
+/** Fold a string for case-insensitive matching. */
+export function normalizeQuery(value) {
+  return typeof value === 'string' ? value.trim().toLowerCase() : ''
+}
+
+/**
+ * Whether one exercise matches a search term.
+ *
+ * All words must match somewhere on the record, which makes "chest dumbbell"
+ * narrow the results instead of widening them.
+ *
+ * @param {import('../data/exercises.js').Exercise} exercise
+ * @param {string} query
+ */
+export function matchesExerciseQuery(exercise, query) {
+  const term = normalizeQuery(query)
+  if (term === '') return true
+
+  const words = term.split(/\s+/)
+  const haystack = [
+    ...SEARCHABLE_FIELDS.map((field) => exercise[field]),
+    ...(exercise.targetMuscles ?? []),
+    ...(exercise.secondaryMuscles ?? []),
+  ]
+    .join(' ')
+    .toLowerCase()
+
+  return words.every((word) => haystack.includes(word))
+}
+
+/**
+ * Search a collection of exercises. An empty term returns everything.
+ *
+ * @param {import('../data/exercises.js').Exercise[]} exercises
+ * @param {string} query
+ */
+export function searchExercises(exercises, query) {
+  const term = normalizeQuery(query)
+  if (term === '') return [...exercises]
+
+  return exercises.filter((exercise) => matchesExerciseQuery(exercise, term))
+}
+
+/**
+ * Human-readable count line for the library header.
+ *
+ * Never hardcoded: the number comes from whatever the current filters matched,
+ * and the wording changes so a filtered result can never be mistaken for the
+ * size of the whole library.
+ *
+ * @param {number} count
+ * @param {boolean} [isFiltered]
+ * @returns {string} e.g. "37 exercises" or "6 exercises found"
+ */
+export function exerciseCountLabel(count, isFiltered = false) {
+  const noun = count === 1 ? 'exercise' : 'exercises'
+  return isFiltered ? `${count} ${noun} found` : `${count} ${noun}`
+}
+
+export { EXERCISE_CATEGORY_NAMES, SEARCHABLE_FIELDS }

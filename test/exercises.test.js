@@ -21,11 +21,15 @@ import {
 } from '../src/data/exerciseCategories.js'
 import {
   distinctValues,
+  exerciseCountLabel,
   findCatalogIssues,
   getExerciseById,
   getExerciseCategoryRecord,
   getExercisesByCategory,
+  matchesExerciseQuery,
+  normalizeQuery,
   primaryMuscle,
+  searchExercises,
   validateExercise,
 } from '../src/utils/exercises.js'
 
@@ -266,6 +270,111 @@ describe('exercise lookups', () => {
       EXERCISE_DIFFICULTIES,
     )
     assert.ok(distinctValues('category').length <= EXERCISE_CATEGORY_NAMES.length)
+  })
+})
+
+describe('searching exercises', () => {
+  it('returns everything for an empty term', () => {
+    assert.equal(searchExercises(EXERCISES, '').length, EXERCISES.length)
+    assert.equal(searchExercises(EXERCISES, '   ').length, EXERCISES.length)
+  })
+
+  it('matches an exercise name', () => {
+    const results = searchExercises(EXERCISES, 'push-up')
+    assert.ok(results.length > 0)
+    assert.ok(results.every((exercise) => exercise.name.toLowerCase().includes('push-up')))
+  })
+
+  it('is case insensitive', () => {
+    assert.deepEqual(searchExercises(EXERCISES, 'PUSH-UP'), searchExercises(EXERCISES, 'push-up'))
+    assert.equal(searchExercises(EXERCISES, 'PuSh-Up').length, searchExercises(EXERCISES, 'push-up').length)
+  })
+
+  it('matches a category name', () => {
+    const results = searchExercises(EXERCISES, 'cardio')
+    assert.ok(results.length > 0)
+    assert.ok(results.every((exercise) => exercise.category === 'Cardio' || exercise.type === 'Cardio'))
+    // Every exercise in the Cardio category is reachable by its own name.
+    const cardioCategory = getExercisesByCategory('Cardio')
+    for (const exercise of cardioCategory) {
+      assert.ok(results.includes(exercise), exercise.name)
+    }
+  })
+
+  it('matches a target muscle', () => {
+    const results = searchExercises(EXERCISES, 'hamstring')
+    assert.ok(results.length > 0)
+    const muscles = results.flatMap((exercise) => [...exercise.targetMuscles, ...exercise.secondaryMuscles])
+    assert.ok(muscles.includes('Hamstrings'))
+  })
+
+  it('matches a secondary muscle too', () => {
+    const results = searchExercises(EXERCISES, 'core')
+    assert.ok(results.some((exercise) => exercise.name === 'Push-Up'))
+  })
+
+  it('matches equipment', () => {
+    const results = searchExercises(EXERCISES, 'bodyweight')
+    assert.ok(results.length > 0)
+    assert.ok(results.every((exercise) => exercise.equipment === 'Bodyweight'))
+  })
+
+  it('matches the exercise type', () => {
+    const results = searchExercises(EXERCISES, 'mobility')
+    assert.ok(results.length > 0)
+    assert.ok(results.every((exercise) => exercise.type === 'Mobility'))
+  })
+
+  it('narrows rather than widens when several words are given', () => {
+    const both = searchExercises(EXERCISES, 'chest dumbbell')
+    const chest = searchExercises(EXERCISES, 'chest')
+    assert.ok(both.length > 0)
+    assert.ok(both.length < chest.length)
+  })
+
+  it('returns nothing for a term that matches nothing', () => {
+    assert.deepEqual(searchExercises(EXERCISES, 'underwater basket weaving'), [])
+  })
+
+  it('finds chest exercises for the word "chest"', () => {
+    const results = searchExercises(getExercisesByCategory('Chest'), 'chest')
+    assert.equal(results.length, getExercisesByCategory('Chest').length)
+  })
+
+  it('normalises whitespace and case', () => {
+    assert.equal(normalizeQuery('  Push-Up  '), 'push-up')
+    assert.equal(normalizeQuery(undefined), '')
+  })
+
+  it('treats a missing term as a match', () => {
+    assert.equal(matchesExerciseQuery(getExerciseById('plank'), '  '), true)
+    assert.equal(matchesExerciseQuery(getExerciseById('plank'), 'plank'), true)
+    assert.equal(matchesExerciseQuery(getExerciseById('plank'), 'squat'), false)
+  })
+
+  it('never mutates the source catalog', () => {
+    const before = EXERCISES.length
+    searchExercises(EXERCISES, 'chest')
+    assert.equal(EXERCISES.length, before)
+  })
+})
+
+describe('exercise count label', () => {
+  it('describes the whole library', () => {
+    assert.equal(exerciseCountLabel(EXERCISES.length), `${EXERCISES.length} exercises`)
+  })
+
+  it('describes a filtered result', () => {
+    assert.equal(exerciseCountLabel(6, true), '6 exercises found')
+  })
+
+  it('uses the singular for one match', () => {
+    assert.equal(exerciseCountLabel(1), '1 exercise')
+    assert.equal(exerciseCountLabel(1, true), '1 exercise found')
+  })
+
+  it('handles an empty result', () => {
+    assert.equal(exerciseCountLabel(0, true), '0 exercises found')
   })
 })
 
