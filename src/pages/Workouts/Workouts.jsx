@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 
 import SectionHeader from '../../components/ui/SectionHeader'
 import Button from '../../components/ui/Button'
+import ConfirmDialog from '../../components/ui/ConfirmDialog'
 import EmptyState from '../../components/ui/EmptyState'
 import WorkoutCard from '../../components/workouts/WorkoutCard'
 import WorkoutSearch from '../../components/workouts/WorkoutSearch'
 import WorkoutFilters from '../../components/workouts/WorkoutFilters'
 import WorkoutCategoryTabs from '../../components/workouts/WorkoutCategoryTabs'
+import { useCustomWorkouts } from '../../hooks/useCustomWorkouts'
 import { WORKOUTS } from '../../data/workouts'
 import { ANY_OPTION } from '../../data/workoutCategories'
 import {
@@ -25,14 +27,21 @@ import './Workouts.css'
  * Browsing is pure local state: choosing a category, typing a search term or
  * changing a filter re-derives the visible list without touching the router, so
  * filtering stays instant. The templates in `src/data/workouts.js` are frozen
- * and never mutated, and custom workouts saved in the builder are merged in by
- * the "My Workouts" section further down the page.
+ * and never mutated.
+ *
+ * The built-in grid below is filterable, and the "My Workouts" section further
+ * down is not: it lists exactly what this account saved in the builder, so
+ * filtering for "Beginner" never appears to delete your own plan. That section
+ * is the only place custom workouts are read from storage, and it is also where
+ * they can be edited or deleted.
  */
 function Workouts() {
   const [category, setCategory] = useState(ANY_OPTION)
   const [query, setQuery] = useState('')
   const [filters, setFilters] = useState(DEFAULT_WORKOUT_FILTERS)
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [pendingDelete, setPendingDelete] = useState(null)
+  const { workouts: savedWorkouts, isEmpty, remove } = useCustomWorkouts()
 
   // A new page starts at the top rather than inheriting the previous scroll.
   useEffect(() => {
@@ -70,10 +79,15 @@ function Workouts() {
         titleAs="h1"
         sub="Train smarter. Choose a plan that fits your goal."
         action={
-          <p className="workout-library__total">
-            <span className="workout-library__total-value">{WORKOUTS.length}</span> ready-made
-            workouts
-          </p>
+          <div className="workout-library__header-actions">
+            <p className="workout-library__total">
+              <span className="workout-library__total-value">{WORKOUTS.length}</span> ready-made
+              workouts
+            </p>
+            <Button to="/workouts/create" size="sm">
+              Create workout
+            </Button>
+          </div>
         }
       />
 
@@ -126,6 +140,62 @@ function Workouts() {
           }
         />
       )}
+
+      <section className="workout-library__mine" aria-labelledby="my-workouts-heading">
+        <SectionHeader
+          eyebrow="Saved on this device"
+          title="My Workouts"
+          titleAs="h2"
+          titleId="my-workouts-heading"
+          sub={
+            isEmpty
+              ? 'Anything you build is stored here, private to your account on this device.'
+              : `${workoutCountLabel(savedWorkouts.length)} saved. Edit one or start prepping it.`
+          }
+          action={
+            savedWorkouts.length > 0 ? (
+              <Button to="/workouts/create" variant="secondary" size="sm">
+                New workout
+              </Button>
+            ) : undefined
+          }
+        />
+
+        {isEmpty ? (
+          <EmptyState
+            title="No saved workouts yet"
+            note="Build a plan from the exercise library and it will wait for you here, on this device only."
+            action={
+              <Button to="/workouts/create">Create your first workout</Button>
+            }
+          />
+        ) : (
+          <ul className="workout-grid">
+            {savedWorkouts.map((workout, index) => (
+              <li key={workout.id} style={{ '--reveal-index': Math.min(index, 11) }}>
+                <WorkoutCard
+                  workout={workout}
+                  isCustom
+                  editHref={`/workouts/edit/${workout.id}`}
+                  onDelete={() => setPendingDelete(workout)}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title={`Delete ${pendingDelete?.name ?? 'this workout'}?`}
+        description="This removes the plan from this device. There is no undo, and the built-in templates are not affected."
+        confirmLabel="Delete workout"
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => {
+          remove(pendingDelete.id)
+          setPendingDelete(null)
+        }}
+      />
     </div>
   )
 }

@@ -13,9 +13,14 @@ import { resolveWorkoutExercises, workoutVolumeLabel } from '../../utils/workout
  * "Start workout" only routes into the workout detail / preparation stage. It
  * never marks anything as completed: the session system is a later stage.
  *
- * @param {{workout: object, startHref?: string}} props
+ * Saved workouts (`isCustom`) get a second action row for editing and
+ * deleting. Those two stay visually separate from the pair every card shares,
+ * so nobody deletes a plan by aiming at "Start workout".
+ *
+ * @param {{workout: object, startHref?: string, isCustom?: boolean,
+ *   editHref?: string, onDelete?: () => void}} props
  */
-function WorkoutCard({ workout, startHref }) {
+function WorkoutCard({ workout, startHref, isCustom = false, editHref, onDelete }) {
   const entries = resolveWorkoutExercises(workout)
   const preview = entries[0]
 
@@ -24,6 +29,9 @@ function WorkoutCard({ workout, startHref }) {
       <div className="workout-card__visual">
         <WorkoutVisual category={workout.category} />
         <span className="chip chip--primary workout-card__category">{workout.category}</span>
+        {isCustom && (
+          <span className="chip chip--muted workout-card__owner">My workout</span>
+        )}
         <span className="workout-card__duration">
           <span className="workout-card__duration-value">{workout.durationMinutes}</span>
           <span className="workout-card__unit">min</span>
@@ -91,6 +99,33 @@ function WorkoutCard({ workout, startHref }) {
           Start workout
         </Button>
       </div>
+
+      {(editHref || onDelete) && (
+        <div className="workout-card__owner-actions">
+          {editHref && (
+            <Button
+              to={editHref}
+              variant="ghost"
+              size="sm"
+              className="workout-card__cta"
+            >
+              Edit
+              <span className="visually-hidden"> {workout.name}</span>
+            </Button>
+          )}
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="workout-card__cta workout-card__delete"
+              onClick={onDelete}
+            >
+              Delete
+              <span className="visually-hidden"> {workout.name}</span>
+            </Button>
+          )}
+        </div>
+      )}
     </article>
   )
 }

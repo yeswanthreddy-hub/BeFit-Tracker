@@ -79,6 +79,9 @@
 }
 
 .workout-detail__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
   padding: 5px 12px;
   border-radius: var(--radius-pill);
@@ -88,6 +91,17 @@
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.workout-detail__saved-note {
+  margin: var(--spacing-sm) 0 0;
+  color: var(--color-text-faint);
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+
+.workout-detail__delete {
+  color: var(--color-danger);
 }
 
 .workout-detail__title {

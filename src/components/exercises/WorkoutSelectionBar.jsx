@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 import { useWorkoutSelection } from '../../hooks/useWorkoutSelection'
 
 /**
@@ -6,6 +8,10 @@ import { useWorkoutSelection } from '../../hooks/useWorkoutSelection'
  * Renders nothing while the selection is empty, so the library stays calm until
  * an athlete actually picks something. Every selected exercise can be removed
  * again from here, which is the "remove" half of the add/remove/count loop.
+ *
+ * "Continue in builder" is the hand-off to the workout builder: the builder
+ * seeds its plan from this same selection and clears it when the workout is
+ * saved, so nothing is carried over twice.
  */
 function WorkoutSelectionBar() {
   const { selectedExercises, count, remove, clear } = useWorkoutSelection()
@@ -21,9 +27,15 @@ function WorkoutSelectionBar() {
             {count} {count === 1 ? 'exercise' : 'exercises'} selected
           </h2>
         </div>
-        <button type="button" className="btn btn--ghost btn--sm" onClick={clear}>
-          Clear selection
-        </button>
+        <div className="selection__header-actions">
+          <Link to="/workouts/create" className="btn btn--primary btn--sm">
+            Continue in builder
+            <span aria-hidden="true"> →</span>
+          </Link>
+          <button type="button" className="btn btn--ghost btn--sm" onClick={clear}>
+            Clear selection
+          </button>
+        </div>
       </div>
 
       <ul className="selection__list">
@@ -46,8 +58,8 @@ function WorkoutSelectionBar() {
       </ul>
 
       <p className="selection__note">
-        This is a temporary selection, not a finished workout. Nothing is marked as
-        completed until you run a session.
+        This is a temporary selection, not a finished workout. The builder picks it
+        up once, and nothing is marked as completed until you run a session.
       </p>
     </section>
   )

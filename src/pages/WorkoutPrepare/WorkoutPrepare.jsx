@@ -8,15 +8,17 @@ import DifficultyBadge from '../../components/exercises/DifficultyBadge'
 import WorkoutVisual from '../../components/workouts/WorkoutVisual'
 import WorkoutExerciseList from '../../components/workouts/WorkoutExerciseList'
 import { useNotifications } from '../../hooks/useNotifications'
-import { getWorkoutById } from '../../utils/workouts'
+import { useWorkout } from '../../hooks/useWorkout'
+import { isCustomWorkout } from '../../utils/customWorkouts'
 import './WorkoutPrepare.css'
 
 /**
  * Preparation stage for one workout: "are you ready, and what are you about to do?"
  *
  * This is deliberately the *last* screen before the session runner. It shows
- * the plan exactly as the athlete will meet it, and the Begin button says
- * plainly that the guided session has not been built yet.
+ * the plan exactly as the athlete will meet it, for a built-in template or a
+ * workout they saved themselves, and the Begin button says plainly that the
+ * guided session has not been built yet.
  *
  * Nothing here marks a workout as completed, records a set, or counts a
  * calorie. Pressing Begin raises an informational message instead of faking a
@@ -24,7 +26,7 @@ import './WorkoutPrepare.css'
  */
 function WorkoutPrepare() {
   const { workoutId } = useParams()
-  const workout = getWorkoutById(workoutId)
+  const workout = useWorkout(workoutId)
   const { notify } = useNotifications()
 
   useEffect(() => {
@@ -65,7 +67,10 @@ function WorkoutPrepare() {
       <header className="workout-prepare__hero">
         <div className="workout-prepare__panel">
           <WorkoutVisual category={workout.category} size="detail" />
-          <p className="workout-prepare__eyebrow">Ready to train</p>
+          <p className="workout-prepare__eyebrow">
+            Ready to train
+            {isCustomWorkout(workout) && <span className="chip chip--muted">My workout</span>}
+          </p>
           <h1 className="workout-prepare__title">{workout.name}</h1>
           <p className="workout-prepare__summary">
             {workout.exercises.length} exercises · about {workout.durationMinutes} minutes ·{' '}
@@ -87,6 +92,11 @@ function WorkoutPrepare() {
             <Button to={`/workouts/${workout.id}`} variant="ghost">
               Back to details
             </Button>
+            {isCustomWorkout(workout) && (
+              <Button to={`/workouts/edit/${workout.id}`} variant="ghost">
+                Edit plan
+              </Button>
+            )}
           </div>
           <p className="workout-prepare__note">
             The guided session runner &mdash; timers, rest counts and a completion summary &mdash; is

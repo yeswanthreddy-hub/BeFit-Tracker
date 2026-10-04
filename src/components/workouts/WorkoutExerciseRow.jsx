@@ -29,7 +29,7 @@ function WorkoutExerciseRow({ entry, index, showLink = true }) {
         <h4 className="workout-row__name">{exercise.name}</h4>
 <p className="workout-row__meta">
             <span className="workout-row__category">{exerciseSubtitle(exercise)}</span>
-            <span aria-hidden="true">·</span>
+            <span aria-hidden="true">&middot;</span>
             <span>{workoutVolumeLabel(entry)}</span>
           </p>
         {exercise.targetMuscles.length > 1 && (

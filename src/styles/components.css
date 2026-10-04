@@ -173,6 +173,18 @@
   background: rgba(255, 255, 255, 0.05);
 }
 
+/* Destructive actions only: never used for navigation. */
+.btn--danger {
+  background: rgba(255, 107, 107, 0.12);
+  color: var(--color-danger);
+  border-color: rgba(255, 107, 107, 0.45);
+}
+
+.btn--danger:hover {
+  background: rgba(255, 107, 107, 0.2);
+  border-color: var(--color-danger);
+}
+
 .btn--lg {
   padding: 15px 28px;
   font-size: 1.02rem;
@@ -191,6 +203,66 @@
 .btn[disabled] {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ---------- confirm dialog ---------- */
+
+@keyframes confirm-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: var(--spacing-md);
+  background: rgba(5, 6, 8, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: confirm-backdrop-in 200ms var(--ease-out) both;
+}
+
+.confirm__panel {
+  width: min(30rem, 100%);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-card), 0 24px 60px rgba(0, 0, 0, 0.5);
+  animation: befit-fade-up 260ms var(--ease-out) both;
+}
+
+.confirm__title {
+  margin: 0 0 var(--spacing-xs);
+  font-size: 1.2rem;
+}
+
+.confirm__text {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.confirm__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-lg);
+}
+
+@media (max-width: 479px) {
+  .confirm__actions {
+    flex-direction: column-reverse;
+  }
+
+  .confirm__actions .btn {
+    width: 100%;
+  }
 }
 
 /* ---------- cards ---------- */
@@ -297,6 +369,14 @@
   color: var(--color-accent);
   background: var(--color-accent-dim);
   border-color: transparent;
+}
+
+/* Marks a record the athlete owns rather than a shipped template. */
+.chip--muted {
+  color: var(--color-text-muted);
+  background: transparent;
+  border-color: var(--color-border-strong);
+  border-style: dashed;
 }
 
 .chip__dot {

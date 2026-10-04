@@ -29,6 +29,24 @@
   color: var(--color-primary);
 }
 
+/* Count and "Create workout" sit together in the header action slot. */
+.workout-library__header-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--spacing-sm);
+}
+
+/* ---------- saved workouts ---------- */
+
+.workout-library__mine {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border);
+}
+
 .workout-library__controls {
   display: flex;
   flex-direction: column;
@@ -359,6 +377,28 @@
 .workout-card__cta {
   flex: 1 1 auto;
   justify-content: center;
+}
+
+/* Owner actions for saved workouts, kept apart from the pair every card has. */
+.workout-card__owner {
+  align-self: flex-start;
+  margin: 0 var(--spacing-sm) 0 0;
+}
+
+.workout-card__owner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  padding: 0 var(--spacing-md) var(--spacing-md);
+}
+
+.workout-card__delete {
+  color: var(--color-danger);
+}
+
+.workout-card__delete:hover {
+  color: var(--color-danger);
+  background: rgba(255, 107, 107, 0.12);
 }
 
 /* ---------- workout plan rows (shared by details & preparation) ---------- */

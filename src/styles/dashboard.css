@@ -1012,9 +1012,18 @@
   flex-direction: column;
 }
 
+.quick-workouts__note {
+  display: inline-block;
+  color: var(--color-text-faint);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
 .quick-workouts__grid {
   display: grid;
   gap: var(--spacing-sm);
+  /* Whatever the library offers fills the row instead of leaving a dead column. */
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
 }
 
 .quick-card {
@@ -1213,7 +1222,7 @@
   }
 
   .quick-workouts__grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
   }
 
   .explore__grid {
@@ -1261,7 +1270,7 @@
 
 @media (min-width: 1180px) {
   .quick-workouts__grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
   }
 }
 

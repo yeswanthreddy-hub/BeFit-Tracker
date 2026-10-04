@@ -1,5 +1,9 @@
 import assert from 'node:assert/strict'
-import { describe, it } from 'node:test'
+import { beforeEach, describe, it } from 'node:test'
+
+import { STORAGE_KEYS, userDataKey } from '../src/utils/storageKeys.js'
+import { getItem, setItem } from '../src/utils/storage.js'
+import { installBrowser } from './helpers/browser.js'
 
 import { WORKOUTS, WORKOUT_COUNT, WORKOUT_CATEGORIES_WITHOUT_WORKOUTS } from '../src/data/workouts.js'
 import {
@@ -514,10 +518,15 @@ describe('custom workout lifecycle', () => {
 
     assert.equal(workout.type, 'custom')
     assert.equal(workout.name, 'My Morning Workout')
-    assert.equal(workout.durationMinutes, 22)
     assert.equal(workout.createdAt, NOW.toISOString())
     assert.equal(workout.updatedAt, NOW.toISOString())
     assert.equal(workout.exercises.length, 1)
+
+    // The typed 22 minutes loses to what the plan actually costs.
+    assert.equal(workout.durationMinutes, deriveWorkoutPlan(draft.exercises).durationMinutes)
+    assert.notEqual(workout.durationMinutes, 22)
+    assert.deepEqual(workout.targetMuscles, deriveWorkoutPlan(draft.exercises).targetMuscles)
+    assert.equal(workout.equipment, 'No Equipment')
   })
 
   it('starts from an empty plan', () => {
@@ -766,5 +775,106 @@ describe('saving a workout from the builder', () => {
   it('keeps reps for counted work', () => {
     assert.equal(createWorkoutEntry('push-up').reps, 10)
     assert.equal(workoutVolumeLabel(createWorkoutEntry('push-up')), '3 sets × 10 reps')
+  })
+})
+
+describe('saved workout persistence', () => {
+  const ALICE = 'user-alice'
+  const BOB = 'user-bob'
+  const aliceKey = userDataKey(STORAGE_KEYS.workouts, ALICE)
+  const bobKey = userDataKey(STORAGE_KEYS.workouts, BOB)
+
+  beforeEach(() => {
+    installBrowser()
+  })
+
+  /** Read a key the way the library does: through the account-scoped key. */
+  const readWorkouts = (key) => normalizeCustomWorkouts(getItem(key))
+
+  it('reads back what the builder wrote, for that account only', () => {
+    const workout = createCustomWorkout({
+      name: 'Saturday Core & Push',
+      description: 'Slow reps, then a plank.',
+      exercises: [createWorkoutEntry('plank'), createWorkoutEntry('push-up')],
+    })
+
+    setItem(aliceKey, upsertCustomWorkout([], workout))
+
+    const saved = readWorkouts(aliceKey)
+    assert.equal(saved.length, 1)
+    assert.equal(saved[0].id, workout.id)
+    assert.equal(saved[0].name, 'Saturday Core & Push')
+    assert.equal(saved[0].exercises.length, 2)
+
+    // The built-in list must never answer for a saved workout.
+    assert.equal(getWorkoutById(workout.id), null)
+    assert.equal(getWorkoutById(workout.id, saved).name, 'Saturday Core & Push')
+
+    // A second account on the same device sees nothing.
+    assert.deepEqual(readWorkouts(bobKey), [])
+  })
+
+  it('edits in place and deletes without touching the other account', () => {
+    const first = createCustomWorkout({
+      name: 'Saturday Core',
+      exercises: [createWorkoutEntry('plank')],
+    })
+    const bobWorkout = createCustomWorkout({
+      name: 'Bob Legs',
+      exercises: [createWorkoutEntry('squat')],
+    })
+
+    setItem(aliceKey, upsertCustomWorkout([], first))
+    setItem(bobKey, upsertCustomWorkout([], bobWorkout))
+
+    const held = createWorkoutEntry('plank', { durationSeconds: 45 })
+    const edited = updateCustomWorkout(first, {
+      ...first,
+      name: 'Saturday Core v2',
+      exercises: [held],
+    })
+
+    setItem(aliceKey, upsertCustomWorkout(readWorkouts(aliceKey), edited))
+
+    const saved = readWorkouts(aliceKey)
+    assert.equal(saved.length, 1)
+    assert.equal(saved[0].name, 'Saturday Core v2')
+    assert.equal(saved[0].createdAt, first.createdAt)
+    assert.equal(saved[0].exercises[0].reps, 0)
+    assert.equal(saved[0].exercises[0].durationSeconds, 45)
+    // The stale duration carried over from the previous plan is corrected.
+    assert.notEqual(saved[0].durationMinutes, first.durationMinutes)
+    assert.equal(saved[0].durationMinutes, deriveWorkoutPlan([held]).durationMinutes)
+
+    setItem(aliceKey, removeCustomWorkout(saved, saved[0].id))
+    assert.deepEqual(readWorkouts(aliceKey), [])
+    assert.equal(readWorkouts(bobKey).length, 1)
+  })
+
+  it('survives hand-edited storage without rendering a broken record', () => {
+    setItem(aliceKey, [
+      'not a workout',
+      null,
+      { id: 'broken', name: '', exercises: [{ exerciseId: 'does-not-exist' }] },
+      { id: 'keep-me', name: 'Legs', exercises: [createWorkoutEntry('plank')] },
+    ])
+
+    const saved = readWorkouts(aliceKey)
+    assert.deepEqual(saved.map((workout) => workout.id), ['keep-me'])
+    assert.equal(resolveWorkoutExercises(saved[0]).length, 1)
+    assert.equal(saved[0].durationMinutes, deriveWorkoutPlan(saved[0].exercises).durationMinutes)
+  })
+
+  it('offers the shortest library plans as quick workouts', () => {
+    const quick = getQuickWorkouts(WORKOUTS, 3)
+    const byRule = [...WORKOUTS].sort(
+      (a, b) => a.durationMinutes - b.durationMinutes || a.name.localeCompare(b.name),
+    )
+
+    assert.deepEqual(quick.map((workout) => workout.id), byRule.slice(0, 3).map((w) => w.id))
+    for (const workout of quick) {
+      assert.ok(workout.exercises.length > 0)
+      assert.ok(workout.durationMinutes >= 1)
+    }
   })
 })

@@ -2,9 +2,9 @@ import {
   DEFAULT_WORKOUT_DRAFT,
   WORKOUT_CATEGORY_NAMES,
   WORKOUT_DIFFICULTIES,
-  WORKOUT_EQUIPMENT,
   WORKOUT_GOALS,
 } from '../data/workoutCategories'
+import { deriveWorkoutPlan } from './workouts'
 
 /**
  * Custom workout rules.
@@ -154,6 +154,13 @@ export function normalizeCustomWorkout(value) {
 
   if (id === '' || name === '') return null
 
+  const exercises = normalizeWorkoutExercises(value?.exercises)
+
+  // Duration, equipment and muscles always come from the plan, never from the
+  // caller. A stored record therefore cannot contradict the exercises it holds,
+  // even if a stale value was written alongside them.
+  const derived = deriveWorkoutPlan(exercises)
+
   return {
     id,
     type: CUSTOM_WORKOUT_TYPE,
@@ -162,17 +169,11 @@ export function normalizeCustomWorkout(value) {
     category: pickOne(value?.category, WORKOUT_CATEGORY_NAMES, DEFAULT_WORKOUT_DRAFT.category),
     goal: pickOne(value?.goal, WORKOUT_GOALS, DEFAULT_WORKOUT_DRAFT.goal),
     difficulty: pickOne(value?.difficulty, WORKOUT_DIFFICULTIES, DEFAULT_WORKOUT_DRAFT.difficulty),
-    durationMinutes: clampWholeNumber(
-      value?.durationMinutes,
-      1,
-      600,
-      DEFAULT_WORKOUT_DRAFT.durationMinutes,
-    ),
-    equipment: pickOne(value?.equipment, WORKOUT_EQUIPMENT, DEFAULT_WORKOUT_DRAFT.equipment),
-    targetMuscles: Array.isArray(value?.targetMuscles)
-      ? value.targetMuscles.filter((muscle) => typeof muscle === 'string')
-      : [],
-    exercises: normalizeWorkoutExercises(value?.exercises),
+    durationMinutes:
+      derived.durationMinutes > 0 ? derived.durationMinutes : DEFAULT_WORKOUT_DRAFT.durationMinutes,
+    equipment: derived.equipment,
+    targetMuscles: derived.targetMuscles,
+    exercises,
     createdAt: typeof value?.createdAt === 'string' ? value.createdAt : null,
     updatedAt: typeof value?.updatedAt === 'string' ? value.updatedAt : null,
   }

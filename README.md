@@ -123,6 +123,52 @@ once:
 - Workout difficulty reuses `EXERCISE_DIFFICULTIES`, so a plan can never be
   harder than the movements inside it.
 
+## Workouts
+
+Four surfaces sit on the same workout data: the library, the detail page, the
+builder and the preparation stage.
+
+| Route | Who can reach it | What it does |
+| --- | --- | --- |
+| `/workouts` | Everyone | Browses the 15 templates with search, category tabs and combined filters, then lists saved workouts in **My Workouts** |
+| `/workouts/:workoutId` | Everyone | Shows the resolved plan with a link per exercise; saved workouts add edit and delete |
+| `/workouts/create` | Signed in | Builds a plan from the exercise catalog |
+| `/workouts/edit/:workoutId` | Signed in | Edits a saved workout in place |
+| `/workouts/:workoutId/start` | Everyone | Preparation stage: the plan in order, and an honest note that the guided session is not built yet |
+
+- A workout is looked up with `useWorkout`, which answers for a template *or* a
+  saved workout, so both reach the same detail and preparation pages.
+- Starting a workout records nothing. There is no timer, no rep counting and no
+  completed-workout entry, because no session runner exists yet.
+
+### Building a workout
+
+- The plan rows set sets, reps or a timed hold, rest, position and removal, and
+  the picker searches the frozen catalog by name, muscle and equipment.
+- Duration, equipment and target muscles are **derived** from the exercises
+  (`deriveWorkoutPlan`) and stored that way, so a saved workout can never
+  disagree with the movements it holds.
+- A pending exercise selection seeds an empty plan when the builder opens, and
+  is consumed once the workout is saved, which is what the selection bar's
+  "Continue in builder" hands over.
+- Validation refuses an unnamed workout or an empty plan, naming the field.
+
+### Saved workouts
+
+| Key | Contents |
+| --- | --- |
+| `befit_workouts` | `[{ id, type: 'custom', name, description, category, goal, difficulty, durationMinutes, equipment, targetMuscles, exercises, createdAt, updatedAt }]` — scoped per account as `befit_u_<userId>_workouts` |
+
+- `useCustomWorkouts` is the only writer. Every read goes through
+  `normalizeCustomWorkouts`, so hand-edited storage degrades into something
+  renderable instead of breaking the library.
+- Editing keeps the id and `createdAt` and moves `updatedAt` forward, so an
+  edited workout never looks new.
+- Deleting asks for confirmation first, and only ever touches the signed-in
+  athlete's own list.
+- Two accounts on one device keep separate lists; the built-in templates are
+  never written to storage at all.
+
 ## Scripts
 
 ```bash
@@ -150,7 +196,7 @@ npm test
 | `test/storage.test.js` | JSON round-trips, corrupt-value fallbacks, `befit_` prefix isolation, no-storage degradation |
 | `test/exercises.test.js` | Catalog integrity (unique ids/names, valid categories and vocabularies, complete records) plus search, combined filtering and related-exercise ranking |
 | `test/workoutSelection.test.js` | Add / remove / toggle / clear rules, corrupt-payload recovery, selection storage key and per-account scoping |
-| `test/workouts.test.js` | Workout template integrity (unique ids, real exercise ids, vocabularies, plan values, duration sanity) plus workout search/filters, custom-workout normalization and builder validation |
+| `test/workouts.test.js` | Workout template integrity (unique ids, real exercise ids, vocabularies, plan values, duration sanity), workout search/filters, derived plan values, custom-workout normalization, builder validation, and the saved-workout persistence flow (account scoping, edit in place, delete, corrupt storage) |
 
 A localStorage stub in `test/helpers/browser.js` stands in for the browser, so
 the real service and utility code is exercised rather than a reimplementation.
