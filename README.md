@@ -94,6 +94,35 @@ workout builder will read.
 - Pure rules live in `src/utils/workoutSelection.js`; `useWorkoutSelection`
   adds the storage and toast behaviour on top.
 
+### Workout library data
+
+`src/data/workouts.js` holds the ready-made plans, and
+`src/data/workoutCategories.js` owns the workout categories and vocabularies
+(category names, goals, equipment, duration buckets, difficulty).
+
+A workout never duplicates exercise data. Each entry stores only the plan and
+references an exercise by id, so renaming a movement updates every workout at
+once:
+
+```js
+{
+  id: 'full-body-beginner',
+  name, description, category, goal, difficulty,
+  durationMinutes, equipment, targetMuscles,
+  exercises: [{ exerciseId: 'push-up', sets: 3, reps: 10, restSeconds: 45 }],
+}
+```
+
+- `durationSeconds` replaces `reps` for timed holds (planks, stretches), so a
+  hold is never rendered as "3 × 1 reps".
+- `src/utils/workouts.js` owns search, the combined filters, duration buckets,
+  exercise resolution and the volume/estimate labels.
+- `src/utils/customWorkouts.js` owns the custom-workout shape: normalizing
+  stored records, the create/update/delete list helpers and the builder's
+  validation messages.
+- Workout difficulty reuses `EXERCISE_DIFFICULTIES`, so a plan can never be
+  harder than the movements inside it.
+
 ## Scripts
 
 ```bash
@@ -121,6 +150,7 @@ npm test
 | `test/storage.test.js` | JSON round-trips, corrupt-value fallbacks, `befit_` prefix isolation, no-storage degradation |
 | `test/exercises.test.js` | Catalog integrity (unique ids/names, valid categories and vocabularies, complete records) plus search, combined filtering and related-exercise ranking |
 | `test/workoutSelection.test.js` | Add / remove / toggle / clear rules, corrupt-payload recovery, selection storage key and per-account scoping |
+| `test/workouts.test.js` | Workout template integrity (unique ids, real exercise ids, vocabularies, plan values, duration sanity) plus workout search/filters, custom-workout normalization and builder validation |
 
 A localStorage stub in `test/helpers/browser.js` stands in for the browser, so
 the real service and utility code is exercised rather than a reimplementation.
