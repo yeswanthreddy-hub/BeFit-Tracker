@@ -19,6 +19,7 @@ export const USER_OWNED_KEYS = new Set([
   STORAGE_KEYS.settings,
   STORAGE_KEYS.aiPreferences,
   STORAGE_KEYS.workoutBuilder,
+  STORAGE_KEYS.activeSession,
 ])
 
 /**

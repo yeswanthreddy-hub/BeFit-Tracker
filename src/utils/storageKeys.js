@@ -31,6 +31,7 @@ export const STORAGE_KEYS = {
   settings: 'befit_settings',
   aiPreferences: 'befit_ai_preferences',
   workoutBuilder: 'befit_workout_builder',
+  activeSession: 'befit_active_workout_session',
 }
 
 /**
