@@ -1,0 +1,399 @@
+/* =========================================================
+   BeFit — workout session runner
+========================================================= */
+
+.session {
+  padding-bottom: var(--spacing-lg);
+}
+
+/* ---------- top bar ---------- */
+
+.session__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) 0 var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.session__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.session__brand:hover {
+  color: inherit;
+}
+
+.session__brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.session__brand-name {
+  font-weight: 700;
+  font-size: 0.98rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.session__brand-sub {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.session__bar-actions {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-shrink: 0;
+}
+
+/* ---------- progress ---------- */
+
+.session__progress {
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-elevated);
+  overflow: hidden;
+}
+
+.session__progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--gradient-primary);
+  transition: width var(--transition-normal);
+}
+
+.session__progress-label {
+  margin: calc(-1 * var(--spacing-sm)) 0 0;
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.session__dot {
+  margin: 0 6px;
+  color: var(--color-text-faint);
+}
+
+/* ---------- stage layout ---------- */
+
+.session__stage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.session__exercise {
+  display: grid;
+  gap: var(--spacing-md);
+}
+
+.session__visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.session__exercise-body {
+  min-width: 0;
+}
+
+.session__eyebrow {
+  margin: 0 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.session__title {
+  margin: 0 0 var(--spacing-xs);
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+}
+
+.session__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2xs);
+  margin: var(--spacing-xs) 0 var(--spacing-sm);
+}
+
+.session__description {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.session__muted {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+/* ---------- work panel ---------- */
+
+.session__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.session__panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.session__panel-label {
+  margin: 0;
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.session__panel-target {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.session__sets {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xs);
+}
+
+.session__set {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 12px var(--spacing-sm);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  font-size: 0.92rem;
+}
+
+.session__set--current {
+  border-color: var(--color-primary);
+  background: var(--color-primary-dim);
+  box-shadow: var(--shadow-glow);
+}
+
+.session__set--done {
+  opacity: 0.7;
+}
+
+.session__set-index {
+  font-weight: 700;
+}
+
+.session__set-target {
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.session__set-status {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--color-text-faint);
+}
+
+.session__set--current .session__set-status {
+  color: var(--color-primary);
+}
+
+.session__set--done .session__set-status {
+  color: var(--color-accent);
+}
+
+/* ---------- hold timer ---------- */
+
+.session__timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.session__timer-value {
+  margin: 0;
+  font-size: clamp(2.4rem, 9vw, 3.4rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.session__timer-note {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.session__timer-note--done {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.session__timer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  justify-content: center;
+}
+
+/* ---------- controls ---------- */
+
+.session__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+/* ---------- rest ---------- */
+
+.session__rest {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  text-align: center;
+  padding: var(--spacing-md) 0;
+}
+
+.session__rest-time {
+  margin: 0;
+  font-size: clamp(3rem, 14vw, 5rem);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-accent);
+}
+
+.session__rest-next {
+  margin: 0 0 var(--spacing-sm);
+  color: var(--color-text-muted);
+}
+
+/* ---------- exercise transition ---------- */
+
+.session__exercise-complete {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.session__next-name {
+  margin: 0 0 var(--spacing-xs);
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+/* ---------- intro / recovery ---------- */
+
+.session__intro,
+.session__recovery {
+  align-items: flex-start;
+  max-width: 620px;
+}
+
+.session__intro .workout-visual {
+  margin-bottom: var(--spacing-sm);
+}
+
+.session__overlay-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-sm);
+}
+
+.session__complete-title {
+  margin: 0;
+}
+
+/* ---------- pause overlay ---------- */
+
+.session__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+  background: rgba(7, 8, 9, 0.78);
+  backdrop-filter: blur(6px);
+}
+
+.session__overlay-card {
+  width: min(440px, 100%);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.session__overlay-title {
+  margin: 0;
+}
+
+.session__overlay-actions {
+  justify-content: center;
+  width: 100%;
+}
+
+/* ---------- responsive ---------- */
+
+@media (min-width: 820px) {
+  .session__exercise {
+    grid-template-columns: minmax(220px, 300px) 1fr;
+    align-items: start;
+  }
+}
+
+@media (min-width: 1000px) {
+  .session__stage {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    align-items: start;
+    gap: var(--spacing-lg);
+  }
+
+  .session__panel {
+    position: sticky;
+    top: calc(var(--nav-height) + var(--spacing-sm));
+  }
+
+  .session__exercise-complete,
+  .session__intro,
+  .session__recovery {
+    grid-column: 1 / -1;
+  }
+}
