@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import Button from '../../components/ui/Button'
 import EmptyState from '../../components/ui/EmptyState'
@@ -7,7 +7,6 @@ import SectionHeader from '../../components/ui/SectionHeader'
 import DifficultyBadge from '../../components/exercises/DifficultyBadge'
 import WorkoutVisual from '../../components/workouts/WorkoutVisual'
 import WorkoutExerciseList from '../../components/workouts/WorkoutExerciseList'
-import { useNotifications } from '../../hooks/useNotifications'
 import { useWorkout } from '../../hooks/useWorkout'
 import { isCustomWorkout } from '../../utils/customWorkouts'
 import './WorkoutPrepare.css'
@@ -17,17 +16,16 @@ import './WorkoutPrepare.css'
  *
  * This is deliberately the *last* screen before the session runner. It shows
  * the plan exactly as the athlete will meet it, for a built-in template or a
- * workout they saved themselves, and the Begin button says plainly that the
- * guided session has not been built yet.
+ * workout they saved themselves, and the Begin button starts the guided session
+ * that records real sets, rest and a completion summary.
  *
- * Nothing here marks a workout as completed, records a set, or counts a
- * calorie. Pressing Begin raises an informational message instead of faking a
- * workout that never happened, so no completed-workout data can be invented.
+ * Nothing here marks a workout as completed or records a set: that only happens
+ * inside the session runner. Preparing is free.
  */
 function WorkoutPrepare() {
   const { workoutId } = useParams()
+  const navigate = useNavigate()
   const workout = useWorkout(workoutId)
-  const { notify } = useNotifications()
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' })
@@ -50,12 +48,7 @@ function WorkoutPrepare() {
   }
 
   const handleBegin = () => {
-    notify({
-      tone: 'info',
-      title: 'Sessions arrive in the next step',
-      message:
-        'The guided session runner is still being built. Your plan is saved, so nothing is lost.',
-    })
+    navigate(`/workouts/${workout.id}/session`, { state: { autostart: true } })
   }
 
   return (
@@ -83,7 +76,7 @@ function WorkoutPrepare() {
           <SectionHeader
             eyebrow="Before you begin"
             title="Check the plan"
-            sub="Warm up, clear some space, and read the order below. Nothing is recorded until a session runner exists."
+            sub="Warm up, clear some space, and read the order below. Your sets, rest and time are tracked as you go."
           />
           <div className="workout-prepare__actions">
             <Button variant="primary" size="lg" onClick={handleBegin}>
@@ -99,9 +92,9 @@ function WorkoutPrepare() {
             )}
           </div>
           <p className="workout-prepare__note">
-            The guided session runner &mdash; timers, rest counts and a completion summary &mdash; is
-            the next piece of BeFit. Pressing Begin today will not record a workout, because
-            pretending a session happened is worse than admitting it has not been built.
+            Begin starts the guided session: it walks through each exercise, counts
+            your sets and rest, and saves a completed workout to your history when
+            you finish. Ending early records nothing.
           </p>
         </div>
       </header>

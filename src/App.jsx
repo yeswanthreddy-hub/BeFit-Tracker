@@ -18,6 +18,8 @@ import ExerciseDetailsPage from './pages/ExerciseDetailsPage'
 import Workouts from './pages/Workouts/Workouts'
 import WorkoutDetails from './pages/WorkoutDetails/WorkoutDetails'
 import WorkoutPrepare from './pages/WorkoutPrepare/WorkoutPrepare'
+import WorkoutSession from './pages/WorkoutSession/WorkoutSession'
+import WorkoutComplete from './pages/WorkoutComplete/WorkoutComplete'
 import WorkoutBuilder from './pages/WorkoutBuilder/WorkoutBuilder'
 import CompletedWorkoutsPage from './pages/CompletedWorkoutsPage'
 import DietPage from './pages/DietPage'
@@ -91,7 +93,30 @@ function App() {
               />
               <Route path="/workouts/:workoutId" element={<WorkoutDetails />} />
               <Route path="/workouts/:workoutId/start" element={<WorkoutPrepare />} />
-              <Route path="/completed" element={<CompletedWorkoutsPage />} />
+              <Route
+                path="/workouts/:workoutId/session"
+                element={
+                  <ProtectedRoute>
+                    <WorkoutSession />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/workouts/:workoutId/complete"
+                element={
+                  <ProtectedRoute>
+                    <WorkoutComplete />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/completed"
+                element={
+                  <ProtectedRoute>
+                    <CompletedWorkoutsPage />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/diet" element={<DietPage />} />
               <Route path="/progress" element={<ProgressPage />} />
               <Route path="/ai-tracker" element={<AiTrackerPage />} />
