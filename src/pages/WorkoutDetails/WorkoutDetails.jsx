@@ -22,8 +22,9 @@ import './WorkoutDetails.css'
  * exercise" links to the existing `/exercises/:exerciseId` page rather than
  * re-implementing it.
  *
- * "Start workout" routes into the preparation stage. Nothing on this page marks
- * a workout as performed: the session system arrives in a later stage.
+ * "Start workout" routes into the preparation stage, which then launches the
+ * guided session runner. Nothing on this page marks a workout as performed:
+ * only finishing a session records it.
  *
  * A saved workout adds the two actions its owner has and the built-ins do not:
  * edit it in the builder, or delete it behind a confirmation.
@@ -153,8 +154,8 @@ function WorkoutDetails() {
               </Button>
             )}
             <p className="workout-detail__cta-note">
-              Preparing a workout does not mark it as completed. The full session
-              runner arrives in the next stage.
+              Start opens the session runner, where your sets and rest are tracked and
+              a completed workout is saved when you finish.
             </p>
           </div>
         </div>

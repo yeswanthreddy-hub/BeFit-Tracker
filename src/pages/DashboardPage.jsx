@@ -19,6 +19,7 @@ import { useUserStorage } from '../hooks/useUserStorage'
 import { STORAGE_KEYS } from '../utils/storageKeys'
 import { isProfileComplete } from '../data/onboarding'
 import { calculateStreak } from '../utils/streak'
+import { parseCompletedWorkouts } from '../utils/workoutHistory'
 import {
   completedOnDay,
   getBasicTotals,
@@ -50,7 +51,7 @@ function DashboardPage() {
   const now = useMemo(() => new Date(), [])
 
   const derived = useMemo(() => {
-    const list = Array.isArray(completed) ? completed : []
+    const list = parseCompletedWorkouts(completed)
     const entries = Array.isArray(progress) ? progress : []
 
     return {
