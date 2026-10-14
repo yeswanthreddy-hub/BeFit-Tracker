@@ -6,12 +6,14 @@ import AiHero from '../../components/ai/AiHero'
 import AiStatusCard from '../../components/ai/AiStatusCard'
 import AiQuickActions from '../../components/ai/AiQuickActions'
 import AiInsight from '../../components/ai/AiInsight'
+import AiHistory from '../../components/ai/AiHistory'
 import AiLoading from '../../components/ai/AiLoading'
 import AiError from '../../components/ai/AiError'
 
 import { useAuth } from '../../hooks/useAuth'
 import { useUserStorage } from '../../hooks/useUserStorage'
 import { useCustomWorkouts } from '../../hooks/useCustomWorkouts'
+import { useAiInsights } from '../../hooks/useAiInsights'
 import { AiError as AiServiceError, generateFitnessAdvice } from '../../services/aiService'
 import { getAiAction } from '../../data/aiActions'
 import { STORAGE_KEYS } from '../../utils/storageKeys'
@@ -19,6 +21,7 @@ import { getDisplayName } from '../../utils/user'
 import { EXERCISES } from '../../data/exercises'
 import { WORKOUTS } from '../../data/workouts'
 import { buildAiContext, buildStatusSnapshot } from '../../utils/aiSummary'
+import { matchInsightExercises } from '../../utils/aiHistory'
 
 import './AIFitnessTracker.css'
 
@@ -47,6 +50,7 @@ function AIFitnessTracker() {
   const [foodLog] = useUserStorage(STORAGE_KEYS.foodLog, [])
   const [nutritionProfile] = useUserStorage(STORAGE_KEYS.nutritionProfile, {})
   const { workouts: customWorkouts } = useCustomWorkouts()
+  const { insights, addInsight, clearInsights } = useAiInsights()
 
   const [status, setStatus] = useState('idle') // idle | loading | success | error
   const [activeAction, setActiveAction] = useState(null)
@@ -125,6 +129,7 @@ function AIFitnessTracker() {
         setResult(next)
         setResultAction(actionId)
         setStatus('success')
+        addInsight(actionId, next)
       } catch (caught) {
         if (requestId !== requestIdRef.current) return
         const aiError = caught instanceof AiServiceError ? caught : new AiServiceError('server')
@@ -134,11 +139,18 @@ function AIFitnessTracker() {
         if (requestId === requestIdRef.current) clearTimeoutRef()
       }
     },
-    [status, context, clearTimeoutRef],
+    [status, context, clearTimeoutRef, addInsight],
   )
 
   const isLoading = status === 'loading'
   const shownAction = getAiAction(isLoading ? activeAction : resultAction ?? activeAction)
+
+  // Library exercises the AI mentioned in the latest result, so the advice can
+  // link straight into the BeFit library. Recomputed only when the result does.
+  const matchedExercises = useMemo(
+    () => (result ? matchInsightExercises(result, EXERCISES) : []),
+    [result],
+  )
 
   return (
     <PageContainer className="ai-tracker">
@@ -176,8 +188,12 @@ function AIFitnessTracker() {
           <AiError error={error} onRetry={activeAction ? () => runAction(activeAction) : undefined} />
         )}
 
-        {status === 'success' && result && <AiInsight action={shownAction} result={result} />}
+        {status === 'success' && result && (
+          <AiInsight action={shownAction} result={result} exercises={matchedExercises} />
+        )}
       </section>
+
+      <AiHistory insights={insights} onClear={clearInsights} />
     </PageContainer>
   )
 }

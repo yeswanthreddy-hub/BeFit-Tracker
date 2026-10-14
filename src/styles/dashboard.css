@@ -1430,3 +1430,117 @@
   font-size: 0.78rem;
 }
 
+/* ---------- AI fitness insight card ---------- */
+
+.ai-insight-card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  border-color: rgba(42, 200, 180, 0.28);
+  background:
+    radial-gradient(120% 160% at 100% 0%, rgba(42, 200, 180, 0.14), transparent 55%),
+    linear-gradient(160deg, var(--color-surface-elevated), var(--color-surface));
+}
+
+.ai-insight-card__glow {
+  position: absolute;
+  top: -60%;
+  right: -10%;
+  width: 45%;
+  height: 200%;
+  pointer-events: none;
+  background: radial-gradient(closest-side, rgba(185, 243, 74, 0.18), transparent 70%);
+  filter: blur(36px);
+}
+
+.ai-insight-card__head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.ai-insight-card__eyebrow {
+  margin: 0 0 2px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--color-accent);
+}
+
+.ai-insight-card__heading {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.ai-insight-card__body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ai-insight-card__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.ai-insight-card__badge {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+  font-size: 0.85rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.ai-insight-card__title {
+  margin: 2px 0 0;
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+.ai-insight-card__summary {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+
+.ai-insight-card__empty {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.ai-insight-card__note {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-faint);
+  font-size: 0.78rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-insight-card__glow {
+    animation: none;
+  }
+}
+
+

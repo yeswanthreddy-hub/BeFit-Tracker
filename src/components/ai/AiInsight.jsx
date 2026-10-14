@@ -1,3 +1,28 @@
+import { Link } from 'react-router-dom'
+
+/**
+ * Library exercises the AI happened to mention.
+ *
+ * Matching is done upstream in `matchInsightExercises`; this only renders the
+ * hits as links into the BeFit library so the athlete can act on the advice.
+ */
+function MatchedExercises({ exercises }) {
+  if (!Array.isArray(exercises) || exercises.length === 0) return null
+
+  return (
+    <div className="ai-result__group ai-result__group--library">
+      <h3 className="ai-result__group-title">From the BeFit library</h3>
+      <div className="ai-result__exercises">
+        {exercises.map((exercise) => (
+          <Link key={exercise.id} to={`/exercises/${exercise.id}`} className="chip chip--accent">
+            {exercise.name}
+          </Link>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 /**
  * One titled list of strings inside a result.
  *
@@ -30,7 +55,7 @@ function InsightList({ title, items, tone = 'default', ordered = false }) {
  * to four lists plus a next step. Every field is optional, so a partial answer
  * still renders cleanly instead of showing blanks.
  */
-function AiInsight({ action, result }) {
+function AiInsight({ action, result, exercises = [] }) {
   return (
     <article className="ai-result card" aria-labelledby="ai-result-title">
       <div className="ai-result__glow" aria-hidden="true" />
@@ -57,6 +82,8 @@ function AiInsight({ action, result }) {
       </div>
 
       <InsightList title="Recommendations" items={result.recommendations} ordered />
+
+      <MatchedExercises exercises={exercises} />
 
       {result.nextStep && (
         <div className="ai-result__next">

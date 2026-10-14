@@ -200,6 +200,9 @@ npm test
 | `test/workoutSelection.test.js` | Add / remove / toggle / clear rules, corrupt-payload recovery, selection storage key and per-account scoping |
 | `test/workouts.test.js` | Workout template integrity (unique ids, real exercise ids, vocabularies, plan values, duration sanity), workout search/filters, derived plan values, custom-workout normalization, builder validation, and the saved-workout persistence flow (account scoping, edit in place, delete, corrupt storage) |
 | `test/aiFitnessApi.test.js` | The AI proxy handler: method/action validation, the missing-key configuration error, success normalisation, prose fallback, rate-limit and provider/network error mapping, context sanitising, and prompt building |
+| `test/aiService.test.js` | The browser AI service: action allow-list, request shape, result normalisation, and safe error mapping |
+| `test/aiSummary.test.js` | The sanitized payload sent to the AI: four fixed sections, profile-only safe fields, workout/nutrition/progress summaries, credential-free output, and the render-only status snapshot |
+| `test/aiHistory.test.js` | Saved AI insight history: forgiving parsing, prepend/dedupe/cap rules, latest lookup, timestamp formatting, and matching AI-mentioned exercises to the BeFit library |
 
 A localStorage stub in `test/helpers/browser.js` stands in for the browser, so
 the real service and utility code is exercised rather than a reimplementation.
@@ -225,6 +228,14 @@ React UI  →  POST /api/ai/fitness  →  serverless function  →  GROQ_API_KEY
 - The key is read from `process.env.GROQ_API_KEY`. It must **never** be
   prefixed with `VITE_`, imported into React, written to `localStorage`, logged,
   or committed.
+
+The browser only ever sends a small, sanitized fitness summary built by
+`src/utils/aiSummary.js` — workout, nutrition and progress numbers plus the
+goal, never an email, password, session token or raw record dump. Each result is
+saved to the user-scoped `befit_ai_insights` key (the newest 10), which powers
+the **AI Fitness Insight** card on the dashboard and the "Recent AI insights"
+list on the AI page. Generating an insight is always an explicit action; loading
+the dashboard never spends an API call.
 
 | Variable | Where | Purpose |
 | --- | --- | --- |
