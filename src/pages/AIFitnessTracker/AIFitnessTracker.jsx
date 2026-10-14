@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import PageContainer from '../../components/ui/PageContainer'
 import EmptyState from '../../components/ui/EmptyState'
@@ -10,8 +10,15 @@ import AiLoading from '../../components/ai/AiLoading'
 import AiError from '../../components/ai/AiError'
 
 import { useAuth } from '../../hooks/useAuth'
+import { useUserStorage } from '../../hooks/useUserStorage'
+import { useCustomWorkouts } from '../../hooks/useCustomWorkouts'
 import { AiError as AiServiceError, generateFitnessAdvice } from '../../services/aiService'
 import { getAiAction } from '../../data/aiActions'
+import { STORAGE_KEYS } from '../../utils/storageKeys'
+import { getDisplayName } from '../../utils/user'
+import { EXERCISES } from '../../data/exercises'
+import { WORKOUTS } from '../../data/workouts'
+import { buildAiContext, buildStatusSnapshot } from '../../utils/aiSummary'
 
 import './AIFitnessTracker.css'
 
@@ -36,6 +43,11 @@ const REQUEST_TIMEOUT_MS = 30000
 function AIFitnessTracker() {
   const { user, profile } = useAuth()
 
+  const [completed] = useUserStorage(STORAGE_KEYS.completedWorkouts, [])
+  const [foodLog] = useUserStorage(STORAGE_KEYS.foodLog, [])
+  const [nutritionProfile] = useUserStorage(STORAGE_KEYS.nutritionProfile, {})
+  const { workouts: customWorkouts } = useCustomWorkouts()
+
   const [status, setStatus] = useState('idle') // idle | loading | success | error
   const [activeAction, setActiveAction] = useState(null)
   const [result, setResult] = useState(null)
@@ -45,6 +57,32 @@ function AIFitnessTracker() {
   const controllerRef = useRef(null)
   const timeoutRef = useRef(null)
   const requestIdRef = useRef(0)
+
+  // One "now" per mount so the snapshot and payload agree on today.
+  const now = useMemo(() => new Date(), [])
+  const allWorkouts = useMemo(() => [...customWorkouts, ...WORKOUTS], [customWorkouts])
+
+  // The safe, minimal summary that leaves the browser — rebuilt only when the
+  // underlying data changes.
+  const context = useMemo(
+    () =>
+      buildAiContext({
+        name: getDisplayName(user),
+        profile,
+        completed,
+        foodLog,
+        nutritionProfile,
+        workouts: allWorkouts,
+        exercises: EXERCISES,
+        now,
+      }),
+    [user, profile, completed, foodLog, nutritionProfile, allWorkouts, now],
+  )
+
+  const snapshot = useMemo(
+    () => buildStatusSnapshot({ completed, foodLog, nutritionProfile, now }),
+    [completed, foodLog, nutritionProfile, now],
+  )
 
   const clearTimeoutRef = useCallback(() => {
     if (timeoutRef.current) {
@@ -82,7 +120,7 @@ function AIFitnessTracker() {
       setError(null)
 
       try {
-        const next = await generateFitnessAdvice({ action: actionId, signal: controller.signal })
+        const next = await generateFitnessAdvice({ action: actionId, context, signal: controller.signal })
         if (requestId !== requestIdRef.current) return
         setResult(next)
         setResultAction(actionId)
@@ -96,7 +134,7 @@ function AIFitnessTracker() {
         if (requestId === requestIdRef.current) clearTimeoutRef()
       }
     },
-    [status, clearTimeoutRef],
+    [status, context, clearTimeoutRef],
   )
 
   const isLoading = status === 'loading'
@@ -106,7 +144,7 @@ function AIFitnessTracker() {
     <PageContainer className="ai-tracker">
       <AiHero onStart={runAction} isLoading={isLoading} />
 
-      <AiStatusCard user={user} profile={profile} />
+      <AiStatusCard user={user} profile={profile} snapshot={snapshot} />
 
       <section className="ai-tracker__section" aria-labelledby="ai-actions-heading">
         <h2 className="ai-tracker__heading" id="ai-actions-heading">

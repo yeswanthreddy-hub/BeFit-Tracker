@@ -1,14 +1,14 @@
 import { getDisplayName } from '../../utils/user'
 
 /**
- * A short snapshot of the coaching context.
+ * A snapshot of the coaching context.
  *
- * On the first cut this is the athlete's onboarding profile — the same values
- * the recommendation rules already use — framed as chips so the page has a
- * grounding block before the first insight. Later milestones enrich it with
- * live workout and nutrition counts.
+ * Two rows: the onboarding profile (goal, experience, session length) and a few
+ * honest headline numbers taken from the same records the rest of the app uses.
+ * Zeros are shown as zeros rather than hidden, so a new athlete sees exactly
+ * where they are starting from.
  */
-function AiStatusCard({ user, profile }) {
+function AiStatusCard({ user, profile, snapshot }) {
   const firstName = getDisplayName(user)
   const duration = Number(profile?.preferredWorkoutDuration) || 0
 
@@ -16,6 +16,18 @@ function AiStatusCard({ user, profile }) {
   if (profile?.fitnessGoal) chips.push(profile.fitnessGoal)
   if (profile?.experienceLevel) chips.push(profile.experienceLevel)
   if (duration > 0) chips.push(`${duration} min sessions`)
+
+  const stats = [
+    {
+      key: 'streak',
+      label: 'Current streak',
+      value: snapshot?.currentStreak ?? 0,
+      unit: (snapshot?.currentStreak ?? 0) === 1 ? 'day' : 'days',
+    },
+    { key: 'week', label: 'Workouts this week', value: snapshot?.weekWorkouts ?? 0, unit: '' },
+    { key: 'total', label: 'Workouts total', value: snapshot?.totalWorkouts ?? 0, unit: '' },
+    { key: 'nutrition', label: 'Days logged', value: snapshot?.daysLogged ?? 0, unit: '' },
+  ]
 
   return (
     <section className="ai-status card" aria-labelledby="ai-status-title">
@@ -45,6 +57,18 @@ function AiStatusCard({ user, profile }) {
           Finish onboarding to get insights tuned to your goal and experience.
         </p>
       )}
+
+      <dl className="ai-status__stats">
+        {stats.map((stat) => (
+          <div key={stat.key} className="ai-status__stat">
+            <dt className="ai-status__stat-label">{stat.label}</dt>
+            <dd className="ai-status__stat-value">
+              {stat.value}
+              {stat.unit && <span className="ai-status__stat-unit"> {stat.unit}</span>}
+            </dd>
+          </div>
+        ))}
+      </dl>
 
       <p className="ai-status__note">
         Insights are built only from your BeFit workouts, nutrition and progress — never your account
