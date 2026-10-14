@@ -829,6 +829,12 @@
   color: var(--color-accent);
 }
 
+.progress-overview__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
 /* ---------- recommendation ---------- */
 
 .recommendation {

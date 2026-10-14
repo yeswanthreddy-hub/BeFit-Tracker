@@ -10,6 +10,7 @@ import TrendChart from '../../components/progress/TrendChart'
 import WorkoutConsistency from '../../components/progress/WorkoutConsistency'
 import StatBars from '../../components/progress/StatBars'
 import NutritionProgress from '../../components/progress/NutritionProgress'
+import PersonalBests from '../../components/progress/PersonalBests'
 
 import { useAuth } from '../../hooks/useAuth'
 import { useUserStorage } from '../../hooks/useUserStorage'
@@ -22,6 +23,7 @@ import { parseFoodLog, normalizeNutritionProfile } from '../../utils/nutrition'
 import { EXERCISES } from '../../data/exercises'
 import { WORKOUTS } from '../../data/workouts'
 import {
+  ALL_TIME,
   RANGE_OPTIONS,
   filterCompletedByRange,
   getConsistencyStats,
@@ -29,6 +31,8 @@ import {
   getMuscleGroupStats,
   getNutritionProgress,
   getNutritionTrend,
+  getPersonalBests,
+  getProgressInsights,
   getWorkoutActivity,
   getWorkoutCategoryStats,
   getWorkoutDurationStats,
@@ -63,11 +67,12 @@ function Progress() {
     const allWorkouts = [...customWorkouts, ...WORKOUTS]
 
     const rangedRecords = filterCompletedByRange(records, range, now)
+    const streak = calculateStreak(records)
 
     return {
       hasWorkouts: records.length > 0,
       hasNutrition: logs.length > 0,
-      streak: calculateStreak(records),
+      streak,
       allTime: getWorkoutProgress(records),
       activity: getWorkoutActivity(records, range, now),
       week: getCurrentWeekConsistency(records, now),
@@ -79,8 +84,27 @@ function Progress() {
       calorieTrend: getNutritionTrendPoints(logs, range, now, 'calories'),
       proteinTrend: getNutritionTrendPoints(logs, range, now, 'protein'),
       proteinTarget: normalizeNutritionProfile(nutritionProfile).dailyProteinTarget,
+      bests: getPersonalBests({
+        completed: records,
+        nutritionProgress: getNutritionProgress(logs, nutritionProfile, ALL_TIME, now),
+        streak,
+      }),
     }
   }, [completed, foodLog, nutritionProfile, customWorkouts, range, now])
+
+  const insights = useMemo(
+    () =>
+      getProgressInsights({
+        workoutProgress: data.allTime,
+        nutritionProgress: data.nutrition,
+        categoryStats: data.categoryStats,
+        muscleStats: data.muscleStats,
+        consistency: data.consistency,
+        hasWorkouts: data.hasWorkouts,
+        hasNutrition: data.hasNutrition,
+      }),
+    [data],
+  )
 
   const firstName = getDisplayName(user)
   const hasAnyData = data.hasWorkouts || data.hasNutrition
@@ -302,6 +326,21 @@ function Progress() {
               </div>
             </>
           )}
+
+          <PersonalBests earned={data.bests.earned} locked={data.bests.locked} />
+
+          <section className="progress__insights card" aria-labelledby="progress-insights-heading">
+            <h2 className="progress__section-title" id="progress-insights-heading">
+              Your insights
+            </h2>
+            <ul className="progress__insights-list">
+              {insights.map((line, index) => (
+                <li key={index} className="progress__insight">
+                  {line}
+                </li>
+              ))}
+            </ul>
+          </section>
         </>
       )}
     </PageContainer>

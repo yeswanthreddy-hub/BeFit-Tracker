@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import Button from '../ui/Button'
+import { formatDuration } from '../../utils/progress'
 
 /**
  * Progress overview.
@@ -10,9 +11,11 @@ import Button from '../ui/Button'
  * misleading zero next to a bar chart.
  */
 function ProgressOverview({ weekCount, totals }) {
-  const { totalWorkouts, totalMinutes, latestWeightKg, weightChangeKg } = totals
+  const { totalWorkouts, totalMinutes, totalSeconds, latestWeightKg, weightChangeKg } = totals
   const hasWorkoutData = totalWorkouts > 0
   const hasWeightData = latestWeightKg !== null
+
+  const trainingTime = totalSeconds > 0 ? formatDuration(totalSeconds) : totalMinutes > 0 ? `${totalMinutes} min` : '—'
 
   const weeklyGoal = 3
   const weekRatio = Math.min(weekCount / weeklyGoal, 1)
@@ -71,7 +74,7 @@ function ProgressOverview({ weekCount, totals }) {
             </div>
             <div className="progress-overview__metric">
               <dt>Training time</dt>
-              <dd>{totalMinutes > 0 ? `${totalMinutes} min` : '—'}</dd>
+              <dd>{trainingTime}</dd>
             </div>
             <div className="progress-overview__metric">
               <dt>Latest weight</dt>
@@ -90,6 +93,12 @@ function ProgressOverview({ weekCount, totals }) {
               </dd>
             </div>
           </dl>
+
+          <div className="progress-overview__actions">
+            <Button to="/progress" variant="secondary" size="sm">
+              View Full Progress
+            </Button>
+          </div>
         </>
       )}
     </section>

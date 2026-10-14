@@ -116,6 +116,7 @@ describe('getBasicTotals', () => {
     assert.deepEqual(getBasicTotals([], []), {
       totalWorkouts: 0,
       totalMinutes: 0,
+      totalSeconds: 0,
       latestWeightKg: null,
       weightChangeKg: null,
     })
@@ -131,6 +132,17 @@ describe('getBasicTotals', () => {
     )
     assert.equal(totals.totalWorkouts, 2)
     assert.equal(totals.totalMinutes, 55)
+  })
+
+  it('prefers real durations when summing training seconds', () => {
+    const totals = getBasicTotals(
+      [
+        { ...on(10, 1), durationSeconds: 1800 },
+        { ...on(10, 2), durationMinutes: 35 },
+      ],
+      [],
+    )
+    assert.equal(totals.totalSeconds, 1800 + 35 * 60)
   })
 
   it('reads the latest weight and the change from the first entry', () => {

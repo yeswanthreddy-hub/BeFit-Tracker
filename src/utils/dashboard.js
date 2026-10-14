@@ -80,6 +80,14 @@ export function getBasicTotals(completed = [], progress = []) {
     ? completed.reduce((sum, item) => sum + (Number(item?.durationMinutes) || 0), 0)
     : 0
 
+  const totalSeconds = Array.isArray(completed)
+    ? completed.reduce((sum, item) => {
+        const seconds = Number(item?.durationSeconds)
+        if (Number.isFinite(seconds)) return sum + seconds
+        return sum + (Number(item?.durationMinutes) || 0) * 60
+      }, 0)
+    : 0
+
   let latestWeightKg = null
   let weightChangeKg = null
 
@@ -98,7 +106,7 @@ export function getBasicTotals(completed = [], progress = []) {
     }
   }
 
-  return { totalWorkouts, totalMinutes, latestWeightKg, weightChangeKg }
+  return { totalWorkouts, totalMinutes, totalSeconds, latestWeightKg, weightChangeKg }
 }
 
 /**
