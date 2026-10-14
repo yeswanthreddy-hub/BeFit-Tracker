@@ -3,68 +3,36 @@ import { useMemo, useState } from 'react'
 import PageContainer from '../../components/ui/PageContainer'
 import SectionHeader from '../../components/ui/SectionHeader'
 import Button from '../../components/ui/Button'
+import ConfirmDialog from '../../components/ui/ConfirmDialog'
 import DailyNutritionSummary from '../../components/diet/DailyNutritionSummary'
 import MealSection from '../../components/diet/MealSection'
+import AddFoodModal from '../../components/diet/AddFoodModal'
+import CustomFoodForm from '../../components/diet/CustomFoodForm'
 import { useFoodLog } from '../../hooks/useFoodLog'
+import { useCustomFoods } from '../../hooks/useCustomFoods'
 import { useNutritionProfile } from '../../hooks/useNutritionProfile'
-import {
-  MEALS,
-  NUTRITION_DISCLAIMER,
-  groupEntriesByMeal,
-  summariseDay,
-} from '../../utils/nutrition'
-import './Diet.css'
+import { FOODS } from '../../data/foods'
+import { MEALS, NUTRITION_DISCLAIMER, groupEntriesByMeal, summariseDay } from '../../utils/nutrition'
 
-/** "Today" / "Yesterday" / "Monday 12 Oct" for the selected day. */
-function dayLabel(date) {
-  const today = new Date()
-  const sameDay = (a, b) => a.toDateString() === b.toDateString()
-  const yesterday = new Date(today)
-  yesterday.setDate(today.getDate() - 1)
-
-  if (sameDay(date, today)) return 'Today'
-  if (sameDay(date, yesterday)) return 'Yesterday'
-
-  return new Intl.DateTimeFormat(undefined, {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'short',
-  }).format(date)
-}
-
-/** Shift a date by whole days without mutating the original. */
-function addDays(date, amount) {
-  const next = new Date(date)
-  next.setDate(next.getDate() + amount)
-  return next
-}
-
-/** A general starting-point calorie target for an onboarding goal. */
-function suggestedCalories(goal) {
-  const RULES = {
-    'Lose Weight': 1800,
-    'Build Muscle': 2600,
-    'Improve Strength': 2400,
-    'Improve Endurance': 2400,
-    'General Fitness': 2200,
-  }
-  return RULES[goal] ?? 2200
-}
+// Track a few recently logged foods so users can jump back to something they just ate.
+const MAX_RECENT_FOODS = 8
 
 /**
  * Food & diet tracker.
  *
- * The day's meals, totals and targets, built entirely from the athlete's stored
- * food log. Everything is scoped to the signed-in account by `useFoodLog`, and
- * every number is an estimate from approximate food values rather than an exact
- * measurement — said plainly on the page so it is never mistaken for medical
- * advice.
+ * One page that owns the whole logging loop: pick a day, see the totals,
+ * browse the food library, add a food to a meal, and manage the athlete's own
+ * foods. Everything is scoped to the signed-in account by `useFoodLog` and
+ * `useCustomFoods`, and every number is an estimate from approximate food
+ * values rather than an exact measurement — said plainly on the page so it is
+ * never mistaken for medical advice.
  *
- * `useFoodLog` and the summary helpers do the maths, so this page cannot
- * disagree with the dashboard's nutrition card.
+ * The summaries come from `summariseDay`, so this page cannot disagree with the
+ * dashboard's nutrition card.
  */
 function Diet() {
-  const { entries } = useFoodLog()
+  const { entries, addFood, removeEntry } = useFoodLog()
+  const { foods: customFoods, create, update, remove } = useCustomFoods()
   const { profile, save } = useNutritionProfile()
 
   const [selectedDate, setSelectedDate] = useState(() => new Date())
@@ -74,6 +42,29 @@ function Diet() {
   const [proteinInput, setProteinInput] = useState(() =>
     profile.dailyProteinTarget > 0 ? String(profile.dailyProteinTarget) : '',
   )
+
+  const [addOpen, setAddOpen] = useState(false)
+  const [addMeal, setAddMeal] = useState(MEALS[0])
+  const [customOpen, setCustomOpen] = useState(false)
+  const [editingCustom, setEditingCustom] = useState(null)
+  const [returnToAdd, setReturnToAdd] = useState(false)
+  const [pendingDelete, setPendingDelete] = useState(null)
+
+  const allFoods = useMemo(() => [...customFoods, ...FOODS], [customFoods])
+
+  const recentFoods = useMemo(() => {
+    const seen = new Set()
+    const recent = []
+    for (let index = entries.length - 1; index >= 0 && recent.length < MAX_RECENT_FOODS; index -= 1) {
+      const entry = entries[index]
+      if (!entry.foodId || seen.has(entry.foodId)) continue
+      const food = allFoods.find((item) => item.id === entry.foodId)
+      if (!food) continue
+      seen.add(entry.foodId)
+      recent.push(food)
+    }
+    return recent
+  }, [entries, allFoods])
 
   const groups = useMemo(
     () => groupEntriesByMeal(entries, selectedDate),
@@ -85,6 +76,21 @@ function Diet() {
   )
 
   const isToday = selectedDate.toDateString() === new Date().toDateString()
+
+  const shiftDay = (days) =>
+    setSelectedDate((date) => {
+      const next = new Date(date)
+      next.setDate(next.getDate() + days)
+      return next
+    })
+
+  const dayLabel = isToday
+    ? 'Today'
+    : selectedDate.toLocaleDateString(undefined, {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric',
+      })
 
   const saveTargets = (event) => {
     event.preventDefault()
@@ -99,7 +105,55 @@ function Diet() {
   }
 
   const useSuggestion = () => {
-    setCalorieInput(String(suggestedCalories(profile?.fitnessGoal)))
+    const RULES = {
+      'Lose Weight': 1800,
+      'Build Muscle': 2600,
+      'Improve Strength': 2400,
+      'Improve Endurance': 2400,
+      'General Fitness': 2200,
+    }
+    setCalorieInput(String(RULES[profile?.fitnessGoal] ?? 2200))
+  }
+
+  const openAdd = (meal) => {
+    setAddMeal(meal)
+    setReturnToAdd(false)
+    setAddOpen(true)
+  }
+
+  const handleAdd = ({ food, meal, servings }) => {
+    addFood({ food, meal, servings, date: selectedDate })
+  }
+
+  const openCustomFromAdd = (food) => {
+    setAddOpen(false)
+    setEditingCustom(food)
+    setReturnToAdd(true)
+    setCustomOpen(true)
+  }
+
+  const openCustomNew = () => {
+    setAddOpen(false)
+    setEditingCustom(null)
+    setReturnToAdd(true)
+    setCustomOpen(true)
+  }
+
+  const handleSaveCustom = (draft) => {
+    const saved = editingCustom ? update(editingCustom.id, draft) : create(draft)
+    if (saved && returnToAdd) setAddOpen(true)
+    return Boolean(saved)
+  }
+
+  const requestDeleteCustom = (food) => {
+    setAddOpen(false)
+    setCustomOpen(false)
+    setPendingDelete(food)
+  }
+
+  const confirmDeleteCustom = () => {
+    if (pendingDelete) remove(pendingDelete.id)
+    setPendingDelete(null)
   }
 
   return (
@@ -111,21 +165,13 @@ function Diet() {
       />
 
       <div className="diet__datebar" role="group" aria-label="Select a day">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setSelectedDate((date) => addDays(date, -1))}
-        >
+        <Button variant="ghost" size="sm" onClick={() => shiftDay(-1)}>
           ← Previous
         </Button>
         <p className="diet__date" aria-live="polite">
-          {dayLabel(selectedDate)}
+          {dayLabel}
         </p>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setSelectedDate((date) => addDays(date, 1))}
-        >
+        <Button variant="ghost" size="sm" onClick={() => shiftDay(1)}>
           Next →
         </Button>
         {!isToday && (
@@ -144,12 +190,11 @@ function Diet() {
               Daily targets
             </h2>
             <p className="diet-targets__note">
-              Optional. Set your own numbers to see what is left. Leave a field
-              blank to skip it.
+              Optional. Set a target to see what is left for the day — adjust it to your own needs.
             </p>
           </div>
           <Button variant="ghost" size="sm" onClick={useSuggestion}>
-            Use a suggested start
+            Suggest a calorie target
           </Button>
         </div>
 
@@ -196,21 +241,59 @@ function Diet() {
         </form>
 
         <p className="diet-targets__disclaimer">
-          A suggested start is a general guide based on your goal, not a personal
-          plan — adjust it to your own needs.
+          A suggested target is a general guide based on your goal, not a personal plan.
         </p>
       </section>
 
       <section aria-labelledby="diet-meals-title">
         <h2 className="diet__meals-title" id="diet-meals-title">
-          {isToday ? "Today's meals" : `Meals · ${dayLabel(selectedDate)}`}
+          {isToday ? "Today's meals" : `Meals · ${dayLabel}`}
         </h2>
         <div className="diet__meals">
-          {MEALS.map((meal) => (
-            <MealSection key={meal} meal={meal} entries={groups[meal]} />
+          {Object.keys(groups).map((meal) => (
+            <MealSection
+              key={meal}
+              meal={meal}
+              entries={groups[meal]}
+              onAdd={openAdd}
+              onRemove={removeEntry}
+            />
           ))}
         </div>
       </section>
+
+      <AddFoodModal
+        open={addOpen}
+        defaultMeal={addMeal}
+        foods={allFoods}
+        recentFoods={recentFoods}
+        onClose={() => setAddOpen(false)}
+        onAdd={handleAdd}
+        onNewCustomFood={openCustomNew}
+        onEditCustomFood={openCustomFromAdd}
+        onDeleteCustomFood={requestDeleteCustom}
+      />
+
+      <CustomFoodForm
+        open={customOpen}
+        initial={editingCustom}
+        onClose={() => setCustomOpen(false)}
+        onSubmit={handleSaveCustom}
+        onDelete={requestDeleteCustom}
+      />
+
+      <ConfirmDialog
+        open={Boolean(pendingDelete)}
+        title="Delete this custom food?"
+        description={
+          pendingDelete
+            ? `${pendingDelete.name} will be removed from your saved foods. Meals you already logged with it are kept.`
+            : ''
+        }
+        confirmLabel="Delete food"
+        onConfirm={confirmDeleteCustom}
+        onCancel={() => setPendingDelete(null)}
+      />
 
       <p className="diet__disclaimer">{NUTRITION_DISCLAIMER}</p>
     </PageContainer>
