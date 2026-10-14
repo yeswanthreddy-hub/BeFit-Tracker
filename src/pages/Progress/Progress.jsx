@@ -6,8 +6,10 @@ import Button from '../../components/ui/Button'
 import EmptyState from '../../components/ui/EmptyState'
 import ProgressStatCard from '../../components/progress/ProgressStatCard'
 import ActivityChart from '../../components/progress/ActivityChart'
+import TrendChart from '../../components/progress/TrendChart'
 import WorkoutConsistency from '../../components/progress/WorkoutConsistency'
 import StatBars from '../../components/progress/StatBars'
+import NutritionProgress from '../../components/progress/NutritionProgress'
 
 import { useAuth } from '../../hooks/useAuth'
 import { useUserStorage } from '../../hooks/useUserStorage'
@@ -16,6 +18,7 @@ import { STORAGE_KEYS } from '../../utils/storageKeys'
 import { getDisplayName } from '../../utils/user'
 import { calculateStreak } from '../../utils/streak'
 import { parseCompletedWorkouts } from '../../utils/workoutHistory'
+import { parseFoodLog, normalizeNutritionProfile } from '../../utils/nutrition'
 import { EXERCISES } from '../../data/exercises'
 import { WORKOUTS } from '../../data/workouts'
 import {
@@ -24,6 +27,8 @@ import {
   getConsistencyStats,
   getCurrentWeekConsistency,
   getMuscleGroupStats,
+  getNutritionProgress,
+  getNutritionTrend,
   getWorkoutActivity,
   getWorkoutCategoryStats,
   getWorkoutDurationStats,
@@ -43,6 +48,8 @@ function Progress() {
   const { user } = useAuth()
 
   const [completed] = useUserStorage(STORAGE_KEYS.completedWorkouts, [])
+  const [foodLog] = useUserStorage(STORAGE_KEYS.foodLog, [])
+  const [nutritionProfile] = useUserStorage(STORAGE_KEYS.nutritionProfile, {})
   const { workouts: customWorkouts } = useCustomWorkouts()
 
   const [range, setRange] = useState(30)
@@ -52,12 +59,14 @@ function Progress() {
 
   const data = useMemo(() => {
     const records = parseCompletedWorkouts(completed)
+    const logs = parseFoodLog(foodLog)
     const allWorkouts = [...customWorkouts, ...WORKOUTS]
 
     const rangedRecords = filterCompletedByRange(records, range, now)
 
     return {
       hasWorkouts: records.length > 0,
+      hasNutrition: logs.length > 0,
       streak: calculateStreak(records),
       allTime: getWorkoutProgress(records),
       activity: getWorkoutActivity(records, range, now),
@@ -66,10 +75,15 @@ function Progress() {
       categoryStats: getWorkoutCategoryStats(rangedRecords),
       muscleStats: getMuscleGroupStats(rangedRecords, allWorkouts, EXERCISES),
       duration: getWorkoutDurationStats(records, range, now),
+      nutrition: getNutritionProgress(logs, nutritionProfile, range, now),
+      calorieTrend: getNutritionTrendPoints(logs, range, now, 'calories'),
+      proteinTrend: getNutritionTrendPoints(logs, range, now, 'protein'),
+      proteinTarget: normalizeNutritionProfile(nutritionProfile).dailyProteinTarget,
     }
-  }, [completed, customWorkouts, range, now])
+  }, [completed, foodLog, nutritionProfile, customWorkouts, range, now])
 
   const firstName = getDisplayName(user)
+  const hasAnyData = data.hasWorkouts || data.hasNutrition
 
   return (
     <PageContainer className="progress">
@@ -79,19 +93,36 @@ function Progress() {
         sub={`Keep showing up, ${firstName}. Your consistency tells the real story.`}
       />
 
-      {!data.hasWorkouts ? (
+      {!hasAnyData ? (
         <EmptyState
           title="Your progress story starts here."
-          note="Complete your first workout to unlock detailed analytics about your activity, categories and training time."
+          note="Complete your first workout and log your meals to unlock detailed analytics."
           action={
-            <Button to="/workouts" variant="primary">
-              Start Workout
-            </Button>
+            <div className="progress__empty-actions">
+              <Button to="/workouts" variant="primary">
+                Start Workout
+              </Button>
+              <Button to="/diet" variant="secondary">
+                Track Food
+              </Button>
+            </div>
           }
         />
       ) : (
         <>
-          <div className="progress__overview">
+          {!data.hasWorkouts ? (
+            <EmptyState
+              title="No workout data yet."
+              note="Complete a workout and your activity, categories and training time will appear here."
+              action={
+                <Button to="/workouts" variant="primary">
+                  Start Workout
+                </Button>
+              }
+            />
+          ) : (
+            <>
+              <div className="progress__overview">
             <ProgressStatCard
               title="Total Workouts"
               value={data.allTime.total}
@@ -218,10 +249,71 @@ function Progress() {
               <div className="progress__fill" style={{ width: `${data.consistency.percent}%` }} />
             </div>
           </section>
+            </>
+          )}
+
+          {!data.hasNutrition ? (
+            <EmptyState
+              title="No nutrition data yet."
+              note="Log your meals on the diet page to see calories, protein and trends here."
+              action={
+                <Button to="/diet" variant="primary">
+                  Track Food
+                </Button>
+              }
+            />
+          ) : (
+            <>
+              <NutritionProgress progress={data.nutrition} />
+
+              <div className="progress__split">
+                <section className="progress__section card" aria-labelledby="progress-calories-heading">
+                  <h2 className="progress__section-title" id="progress-calories-heading">
+                    Calories over time
+                  </h2>
+                  <p className="progress__section-note">Daily logged calories.</p>
+                  <TrendChart
+                    points={data.calorieTrend}
+                    unit="kcal"
+                    accent="primary"
+                    title="Calories over time"
+                    emptyNote="No food logged in this range."
+                  />
+                </section>
+
+                <section className="progress__section card" aria-labelledby="progress-protein-heading">
+                  <h2 className="progress__section-title" id="progress-protein-heading">
+                    Protein intake
+                  </h2>
+                  <p className="progress__section-note">
+                    {data.proteinTarget > 0
+                      ? `Daily protein against your ${data.proteinTarget} g target.`
+                      : 'Daily protein logged.'}
+                  </p>
+                  <TrendChart
+                    points={data.proteinTrend}
+                    target={data.proteinTarget}
+                    unit="g"
+                    accent="accent"
+                    title="Protein intake"
+                    emptyNote="No food logged in this range."
+                  />
+                </section>
+              </div>
+            </>
+          )}
         </>
       )}
     </PageContainer>
   )
+}
+
+/** Map trend points to the {label, value} shape the chart expects. */
+function getNutritionTrendPoints(logs, range, now, key) {
+  return getNutritionTrend(logs, range, now).map((point) => ({
+    label: point.label,
+    value: point[key],
+  }))
 }
 
 export default Progress
