@@ -819,3 +819,26 @@
     transform: none;
   }
 }
+
+/* ---------------------------------------------------------
+   AI disabled in Settings
+--------------------------------------------------------- */
+
+.ai-tracker__disabled-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.ai-tracker__disabled-title {
+  margin: 0;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.ai-tracker__disabled-note {
+  margin: 0;
+  max-width: 48ch;
+  color: var(--color-text-muted);
+}

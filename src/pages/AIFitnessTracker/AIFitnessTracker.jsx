@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import PageContainer from '../../components/ui/PageContainer'
+import Button from '../../components/ui/Button'
 import EmptyState from '../../components/ui/EmptyState'
 import AiHero from '../../components/ai/AiHero'
 import AiStatusCard from '../../components/ai/AiStatusCard'
@@ -14,6 +15,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useUserStorage } from '../../hooks/useUserStorage'
 import { useCustomWorkouts } from '../../hooks/useCustomWorkouts'
 import { useAiInsights } from '../../hooks/useAiInsights'
+import { useSettings } from '../../hooks/useSettings'
 import { AiError as AiServiceError, generateFitnessAdvice } from '../../services/aiService'
 import { getAiAction } from '../../data/aiActions'
 import { STORAGE_KEYS } from '../../utils/storageKeys'
@@ -45,6 +47,8 @@ const REQUEST_TIMEOUT_MS = 30000
  */
 function AIFitnessTracker() {
   const { user, profile } = useAuth()
+  const { settings } = useSettings()
+  const aiDisabled = !settings.aiInsights
 
   const [completed] = useUserStorage(STORAGE_KEYS.completedWorkouts, [])
   const [foodLog] = useUserStorage(STORAGE_KEYS.foodLog, [])
@@ -107,7 +111,7 @@ function AIFitnessTracker() {
 
   const runAction = useCallback(
     async (actionId) => {
-      if (!actionId || status === 'loading') return
+      if (!actionId || status === 'loading' || aiDisabled) return
 
       const requestId = requestIdRef.current + 1
       requestIdRef.current = requestId
@@ -139,7 +143,7 @@ function AIFitnessTracker() {
         if (requestId === requestIdRef.current) clearTimeoutRef()
       }
     },
-    [status, context, clearTimeoutRef, addInsight],
+    [status, context, clearTimeoutRef, addInsight, aiDisabled],
   )
 
   const isLoading = status === 'loading'
@@ -154,46 +158,72 @@ function AIFitnessTracker() {
 
   return (
     <PageContainer className="ai-tracker">
-      <AiHero onStart={runAction} isLoading={isLoading} />
+      <AiHero onStart={runAction} isLoading={isLoading} disabled={aiDisabled} />
 
       <AiStatusCard user={user} profile={profile} snapshot={snapshot} />
 
-      <section className="ai-tracker__section" aria-labelledby="ai-actions-heading">
-        <h2 className="ai-tracker__heading" id="ai-actions-heading">
-          Quick AI Actions
-        </h2>
-        <AiQuickActions onAction={runAction} disabled={isLoading} activeAction={activeAction} />
-      </section>
+      {aiDisabled ? (
+        <section
+          className="ai-tracker__section ai-tracker__disabled"
+          aria-labelledby="ai-disabled-heading"
+        >
+          <h2 className="ai-tracker__heading" id="ai-disabled-heading">
+            AI Insights are paused
+          </h2>
+          <div className="ai-tracker__disabled-card card" role="status">
+            <p className="ai-tracker__disabled-title">AI insights are disabled in Settings.</p>
+            <p className="ai-tracker__disabled-note">
+              Turn AI insights back on to let your BeFit coach analyse your workouts, nutrition and
+              progress again.
+            </p>
+            <Button to="/settings" variant="primary">
+              Open AI Settings
+            </Button>
+          </div>
+        </section>
+      ) : (
+        <>
+          <section className="ai-tracker__section" aria-labelledby="ai-actions-heading">
+            <h2 className="ai-tracker__heading" id="ai-actions-heading">
+              Quick AI Actions
+            </h2>
+            <AiQuickActions onAction={runAction} disabled={isLoading} activeAction={activeAction} />
+          </section>
 
-      <section
-        className="ai-tracker__section"
-        aria-labelledby="ai-result-heading"
-        aria-live="polite"
-        aria-busy={isLoading}
-      >
-        <h2 className="ai-tracker__heading" id="ai-result-heading">
-          {shownAction ? shownAction.title : 'AI Insight'}
-        </h2>
+          <section
+            className="ai-tracker__section"
+            aria-labelledby="ai-result-heading"
+            aria-live="polite"
+            aria-busy={isLoading}
+          >
+            <h2 className="ai-tracker__heading" id="ai-result-heading">
+              {shownAction ? shownAction.title : 'AI Insight'}
+            </h2>
 
-        {status === 'idle' && (
-          <EmptyState
-            title="Your coach is standing by."
-            note="Choose a quick action above and your AI coach will turn your own BeFit data into a clear, personal insight."
-          />
-        )}
+            {status === 'idle' && (
+              <EmptyState
+                title="Your coach is standing by."
+                note="Choose a quick action above and your AI coach will turn your own BeFit data into a clear, personal insight."
+              />
+            )}
 
-        {isLoading && <AiLoading />}
+            {isLoading && <AiLoading />}
 
-        {status === 'error' && (
-          <AiError error={error} onRetry={activeAction ? () => runAction(activeAction) : undefined} />
-        )}
+            {status === 'error' && (
+              <AiError
+                error={error}
+                onRetry={activeAction ? () => runAction(activeAction) : undefined}
+              />
+            )}
 
-        {status === 'success' && result && (
-          <AiInsight action={shownAction} result={result} exercises={matchedExercises} />
-        )}
-      </section>
+            {status === 'success' && result && (
+              <AiInsight action={shownAction} result={result} exercises={matchedExercises} />
+            )}
+          </section>
 
-      <AiHistory insights={insights} onClear={clearInsights} />
+          <AiHistory insights={insights} onClear={clearInsights} />
+        </>
+      )}
     </PageContainer>
   )
 }

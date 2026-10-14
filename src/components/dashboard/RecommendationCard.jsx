@@ -7,8 +7,8 @@ import { getRecommendation } from '../../utils/dashboard'
  * deterministic rules (fitness goal + experience level + preferred duration).
  * No AI, no network calls, and no randomness.
  */
-function RecommendationCard({ profile }) {
-  const rec = getRecommendation(profile)
+function RecommendationCard({ profile, style = '' }) {
+  const rec = getRecommendation(profile, { style })
 
   return (
     <section className="recommendation card" aria-labelledby="rec-title">
@@ -28,6 +28,7 @@ function RecommendationCard({ profile }) {
         )}
         {rec.level && <span className="chip chip--accent">{rec.level}</span>}
         {rec.goal && <span className="chip">{rec.goal}</span>}
+        {rec.style && rec.style !== 'Mixed' && <span className="chip">{rec.style}</span>}
       </div>
     </section>
   )

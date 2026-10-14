@@ -1,4 +1,5 @@
 import { toDateKey } from './streak'
+import { WORKOUT_STYLE_FOCUS } from './settings'
 
 /**
  * Pure helpers that turn stored records into what the dashboard shows.
@@ -114,12 +115,17 @@ export function getBasicTotals(completed = [], progress = []) {
  *
  * Pure rule lookup on `fitnessGoal` + `experienceLevel`. No AI, no network and
  * no randomness, so the same profile always produces the same suggestion.
+ *
+ * An optional `options.style` (the athlete's preferred workout style from
+ * Settings) overlays the suggested focus, so the preference actually changes
+ * what the dashboard recommends instead of being stored and ignored.
  */
-export function getRecommendation(profile = null) {
+export function getRecommendation(profile = null, options = {}) {
   const goal = profile?.fitnessGoal ?? ''
   const level = String(profile?.experienceLevel ?? '')
   const duration = Number(profile?.preferredWorkoutDuration) || 30
   const isBeginner = level.toLowerCase() === 'beginner'
+  const style = typeof options.style === 'string' ? options.style : ''
 
   const RULES = [
     {
@@ -156,6 +162,10 @@ export function getRecommendation(profile = null) {
 
   const match = RULES.find((rule) => rule.when())
 
+  // A chosen workout style replaces just the focus label; the title and
+  // description stay driven by the goal so the suggestion still makes sense.
+  const styleFocus = WORKOUT_STYLE_FOCUS[style]
+
   // Only the descriptive fields are returned; the matching predicate is an
   // implementation detail and has no business leaking into view data.
   return {
@@ -163,10 +173,11 @@ export function getRecommendation(profile = null) {
     description: match
       ? match.description
       : 'A balanced session covering the main muscle groups.',
-    focus: match ? match.focus : 'Full Body',
+    focus: styleFocus ?? (match ? match.focus : 'Full Body'),
     durationMinutes: duration,
     goal,
     level,
+    style,
   }
 }
 

@@ -27,12 +27,12 @@ const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
 /**
  * Centralised model configuration.
  *
- * `llama-3.3-70b-versatile` is a current, generally available GroqCloud text
- * model with JSON object mode, which is what the structured response relies on.
+ * `openai/gpt-oss-120b` is a current, generally available GroqCloud model that
+ * supports JSON object mode, which is what the structured response relies on.
  * It can be overridden server-side with the optional `GROQ_MODEL` environment
  * variable — the model name is never sent to, or configurable from, the browser.
  */
-const DEFAULT_MODEL = 'llama-3.3-70b-versatile'
+const DEFAULT_MODEL = 'openai/gpt-oss-120b'
 
 /** Controlled set of actions the browser may request. */
 export const AI_ACTIONS = Object.freeze([

@@ -9,6 +9,7 @@ import {
   saveProfile,
   signIn,
   signOut,
+  updateAccount as updateAccountRecord,
 } from '../services/authService'
 
 const EMPTY = { session: null, user: null, profile: null }
@@ -72,6 +73,18 @@ export function AuthProvider({ children }) {
     return profile
   }, [])
 
+  /** Update the account's editable identity (name / email). */
+  const updateAccount = useCallback((updates) => {
+    const session = readSession()
+    if (!session) {
+      return { ok: false, errors: { form: 'Your session has ended. Please sign in again.' } }
+    }
+
+    const result = updateAccountRecord(session.userId, updates)
+    if (result.ok) setState(readAuthState())
+    return result
+  }, [])
+
   const value = useMemo(
     () => ({
       ...state,
@@ -80,9 +93,10 @@ export function AuthProvider({ children }) {
       login,
       logout,
       updateProfile,
+      updateAccount,
       refresh,
     }),
-    [state, register, login, logout, updateProfile, refresh],
+    [state, register, login, logout, updateProfile, updateAccount, refresh],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

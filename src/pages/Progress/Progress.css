@@ -125,7 +125,7 @@
 
 .progress__range-btn.is-active {
   background: var(--gradient-primary);
-  color: #0a0c0e;
+  color: var(--color-on-primary);
 }
 
 /* ---------- generic sections ---------- */
@@ -243,7 +243,7 @@
 .activity-chart__count {
   font-size: 0.7rem;
   font-weight: 800;
-  color: #0a0c0e;
+  color: var(--color-on-primary);
   margin-top: 2px;
 }
 

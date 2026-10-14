@@ -21,6 +21,28 @@ export const EXPERIENCE_OPTIONS = [
 
 export const DURATION_OPTIONS = [15, 30, 45, 60]
 
+/**
+ * A short, non-medical line shown when a goal is selected in Settings.
+ * Kept general on purpose — BeFit gives training guidance, not medical advice.
+ */
+export const GOAL_DETAILS = {
+  'Build Muscle':
+    'Focus your training around progressive strength and muscle development.',
+  'Lose Weight':
+    'Keep sessions moving with steady conditioning and consistent activity.',
+  'Improve Strength':
+    'Prioritise the main lifts and add load gradually over time.',
+  'Improve Endurance':
+    'Build your aerobic base with longer, lower-intensity work.',
+  'General Fitness':
+    'Stay active and consistent with balanced, well-rounded sessions.',
+}
+
+/** Description for a goal, with a safe fallback for unknown values. */
+export function getGoalDetail(goal) {
+  return GOAL_DETAILS[goal] ?? 'Choose the goal that matters most right now.'
+}
+
 export const ONBOARDING_MESSAGES = {
   goalRequired: 'Choose the goal that matters most right now.',
   experienceRequired: 'Choose your current experience level.',

@@ -20,6 +20,7 @@ import {
   validateLoginForm,
   validateRegisterForm,
   AUTH_MESSAGES,
+  validateEmail,
 } from '../utils/validation'
 
 const USERS_KEY = STORAGE_KEYS.users
@@ -225,6 +226,60 @@ export function saveProfile(userId, updates = {}) {
 
   writeProfile(userId, next)
   return next
+}
+
+/* ---------- account updates ---------- */
+
+/**
+ * Update an account's editable identity fields (name and email).
+ *
+ * This is the smallest safe change to a local account: the stored password is
+ * left untouched, the id is immutable, and an email can only be changed to one
+ * that is not already used by another account. The account's profile copy of
+ * the name/email is kept in sync so displays stay consistent.
+ *
+ * @returns {{ok: true, user: Object} | {ok: false, errors: Object}}
+ */
+export function updateAccount(userId, updates = {}) {
+  const users = readUsers()
+  const index = users.findIndex((user) => user.id === userId)
+  if (index === -1) {
+    return { ok: false, errors: { form: 'We could not find your account. Please sign in again.' } }
+  }
+
+  const current = users[index]
+  const errors = {}
+
+  const name = String(updates.name ?? current.name ?? '').trim().replace(/\s+/g, ' ')
+  if (!name) {
+    errors.name = AUTH_MESSAGES.nameRequired
+  } else if (name.length > 60) {
+    errors.name = 'Please keep your name under 60 characters.'
+  }
+
+  const email = normalizeEmail(updates.email ?? current.email)
+  const emailError = validateEmail(email)
+  if (emailError) {
+    errors.email = emailError
+  } else if (users.some((user) => user.id !== userId && normalizeEmail(user.email) === email)) {
+    errors.email = AUTH_MESSAGES.emailTaken
+  }
+
+  if (Object.keys(errors).length > 0) return { ok: false, errors }
+
+  const next = { ...current, name, email }
+  users[index] = next
+  if (!writeUsers(users)) {
+    return {
+      ok: false,
+      errors: { form: 'We could not save your changes in this browser. Please try again.' },
+    }
+  }
+
+  const profile = readProfile(userId)
+  if (profile) writeProfile(userId, { ...profile, name, email, updatedAt: nowIso() })
+
+  return { ok: true, user: next }
 }
 
 /* ---------- sign in / sign out ---------- */

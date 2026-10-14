@@ -1,5 +1,6 @@
 import Button from '../ui/Button'
 import { useAiInsights } from '../../hooks/useAiInsights'
+import { useSettings } from '../../hooks/useSettings'
 import { getAiAction } from '../../data/aiActions'
 import { formatInsightTime } from '../../utils/aiHistory'
 
@@ -19,8 +20,13 @@ function clamp(text, max = 180) {
  * the athlete in instead of showing an empty panel.
  */
 function AiInsightCard() {
+  const { settings } = useSettings()
   const { latest } = useAiInsights()
   const action = latest ? getAiAction(latest.action) : null
+
+  // Respect the Settings choice before rendering anything, so a disabled card
+  // never appears and never triggers any AI work.
+  if (!settings.aiInsights || !settings.showAiInsightsOnDashboard) return null
 
   return (
     <section className="ai-insight-card card" aria-labelledby="dashboard-ai-title">

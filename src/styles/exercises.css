@@ -91,7 +91,7 @@
 }
 
 .category-tab.is-active {
-  color: var(--color-bg);
+  color: var(--color-on-primary);
   background: var(--tab-accent);
   border-color: transparent;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
@@ -394,7 +394,7 @@
   padding: 0 7px;
   border-radius: var(--radius-pill);
   background: var(--color-primary);
-  color: var(--color-bg);
+  color: var(--color-on-primary);
   font-size: 0.75rem;
   font-weight: 800;
 }

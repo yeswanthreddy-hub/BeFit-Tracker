@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 import { AuthProvider } from './context/AuthProvider'
+import { SettingsProvider } from './context/SettingsProvider'
 import { NotificationProvider } from './context/NotificationProvider'
 import AppLayout from './components/layout/AppLayout'
 import AuthLayout from './components/auth/AuthLayout'
@@ -25,7 +26,7 @@ import CompletedWorkoutsPage from './pages/CompletedWorkoutsPage'
 import Diet from './pages/Diet/Diet'
 import Progress from './pages/Progress/Progress'
 import AIFitnessTracker from './pages/AIFitnessTracker/AIFitnessTracker'
-import SettingsPage from './pages/SettingsPage'
+import Settings from './pages/Settings/Settings'
 import NotFoundPage from './pages/NotFoundPage'
 
 function App() {
@@ -33,7 +34,8 @@ function App() {
     <BrowserRouter>
       <NotificationProvider>
         <AuthProvider>
-          <Routes>
+          <SettingsProvider>
+            <Routes>
             <Route path="/" element={<LandingPage />} />
 
             <Route element={<AuthLayout />}>
@@ -141,11 +143,19 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route path="/settings" element={<SettingsPage />} />
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute>
+                    <Settings />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="*" element={<NotFoundPage />} />
             </Route>
-          </Routes>
-          <Toaster />
+            </Routes>
+            <Toaster />
+          </SettingsProvider>
         </AuthProvider>
       </NotificationProvider>
     </BrowserRouter>

@@ -4,6 +4,19 @@ BeFit is a modern **workout planner + fitness tracker** that runs entirely in th
 Plan workouts, discover exercises, log completed sessions, monitor streaks and progress,
 track food and macros — all persisted locally with `localStorage`.
 
+## Features
+
+- Landing page, local sign-up / sign-in / sign-out, and guided onboarding
+- Dashboard with streak, weekly activity, today's summary, quick workouts and AI insight
+- Exercise library with search, category / difficulty / equipment / type filters and details
+- Workout library (15 templates), custom workout builder, and a guided session runner
+- Workout session with hold timer, rest countdown, pause/resume, refresh recovery and completion
+- Completed workout history, streaks and progress analytics (7 / 30 / 90 day, all time)
+- Diet tracker: food search, custom foods, meal logging, serving multipliers and macro targets
+- AI Fitness Tracker: daily insight, workout recommendation, nutrition insight and progress review
+- Settings: profile, goal, workout preferences, appearance, reduced motion, AI preferences
+- Data export, import, clear-fitness-data and delete-all-data (all local to this browser)
+
 ## Stack
 
 - Vite
@@ -12,6 +25,7 @@ track food and macros — all persisted locally with `localStorage`.
 - JavaScript (no TypeScript)
 - CSS design system
 - `localStorage` for persistent app data
+- Vercel Serverless Function proxying GroqCloud for AI
 
 No database and no external auth. Everything the app stores lives in the
 browser. The only server-side code is a single Vercel serverless function that
@@ -136,12 +150,22 @@ builder and the preparation stage.
 | `/workouts/:workoutId` | Everyone | Shows the resolved plan with a link per exercise; saved workouts add edit and delete |
 | `/workouts/create` | Signed in | Builds a plan from the exercise catalog |
 | `/workouts/edit/:workoutId` | Signed in | Edits a saved workout in place |
-| `/workouts/:workoutId/start` | Everyone | Preparation stage: the plan in order, and an honest note that the guided session is not built yet |
+| `/workouts/:workoutId/start` | Everyone | Preparation stage: the plan in order, then **Start** launches the guided session |
+| `/workouts/:workoutId/session` | Signed in | The guided runner: sets, reps or hold timer, rest countdown, pause/resume and previous/next |
+| `/workouts/:workoutId/complete` | Signed in | Completion screen shown after a finished session |
+| `/completed` | Signed in | Completed workout history, grouped and summarised |
 
 - A workout is looked up with `useWorkout`, which answers for a template *or* a
   saved workout, so both reach the same detail and preparation pages.
-- Starting a workout records nothing. There is no timer, no rep counting and no
-  completed-workout entry, because no session runner exists yet.
+- The runner is driven by `useWorkoutSession` (rules in
+  `src/utils/workoutSession.js`): one 1-second heartbeat, a per-set hold timer
+  and a between-set rest timer. Pausing freezes the workout clock; a refresh
+  offers to resume from the stored snapshot.
+- Leaving with **End workout** clears the in-progress snapshot and records
+  nothing. Only **Finish workout** on the last exercise writes a completed
+  record, so an abandoned session never counts as a completed workout.
+- Completed records are stored in the account-scoped `befit_completed_workouts`
+  key and feed the dashboard streak, recent activity and the progress analytics.
 
 ### Building a workout
 
@@ -240,7 +264,7 @@ the dashboard never spends an API call.
 | Variable | Where | Purpose |
 | --- | --- | --- |
 | `GROQ_API_KEY` | Server env (Vercel project settings, or `.env` locally) | The Groq API key used by `api/ai/fitness.js` |
-| `GROQ_MODEL` | Server env (optional) | Overrides the default model (`llama-3.3-70b-versatile`) |
+| `GROQ_MODEL` | Server env (optional) | Overrides the default model (`openai/gpt-oss-120b`) |
 
 ### Running locally
 
@@ -255,7 +279,44 @@ Vercel. `vite preview` gets the same treatment via `configurePreviewServer`. If
 you prefer the real serverless runtime, install the Vercel CLI and run
 `vercel dev`.
 
-Because `api/ai/fitness.js` follows the Vercel Node function convention, no
-extra configuration is needed to deploy: Vercel picks up the `api/` directory
-automatically. Secret keys are **never** committed — see `.env.example` for the
-placeholder shape and `.gitignore` for the ignored env files.
+Because `api/ai/fitness.js` follows the Vercel Node function convention, Vercel
+picks up the `api/` directory automatically. Secret keys are **never**
+committed — see `.env.example` for the placeholder shape and `.gitignore` for
+the ignored env files.
+
+### Local data, not the cloud
+
+BeFit stores account and fitness data in this browser's `localStorage`. Data is
+therefore **browser-specific**: it is not synced across devices, and clearing
+browser storage (or using a different browser / profile) will remove it. Export
+your data from **Settings → Data Management** if you want a backup. There is no
+cloud database and no account recovery.
+
+### AI guidance disclaimer
+
+AI insights and recommendations are generated by GroqCloud from the fitness data
+you have logged. Treat them as general fitness guidance, **not medical advice or
+diagnosis**. Consult a qualified healthcare professional before making changes
+that affect your health.
+
+## Deployment (Vercel)
+
+BeFit is built to deploy on Vercel with no extra tooling:
+
+1. Import the GitHub repository into Vercel.
+2. Add the server-side environment variable `GROQ_API_KEY` in
+   **Project → Settings → Environment Variables**. Never prefix it with `VITE_`.
+3. Deploy. Vercel runs `vite build`, serves `dist/`, and exposes
+   `api/ai/fitness.js` as a serverless function at `/api/ai/fitness`.
+
+`vercel.json` contains a single SPA rewrite so direct requests such as
+`/dashboard` or `/progress` load the app instead of returning a 404. The rewrite
+deliberately excludes `/api/*` so the AI serverless function is never swallowed
+by the SPA fallback.
+
+### Production build
+
+```bash
+npm run build     # outputs dist/
+npm run preview   # serves the production build locally (with a working AI route)
+```

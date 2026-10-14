@@ -1,7 +1,6 @@
 /**
- * Where each Explore tile leads. Every entry points at a real route so there
- * are no dead buttons; routes still marked "coming soon" land on their
- * placeholder page.
+ * Where each Explore tile leads. Every entry points at a real route, so there
+ * are no dead buttons.
  */
 export const EXPLORE_DESTINATIONS = [
   {
@@ -27,7 +26,7 @@ export const EXPLORE_DESTINATIONS = [
   {
     to: '/ai-tracker',
     title: 'AI Fitness',
-    text: 'Your smart fitness tracker — on the way.',
+    text: 'Turn your training data into a personal AI insight.',
   },
   {
     to: '/settings',

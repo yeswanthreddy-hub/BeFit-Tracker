@@ -18,6 +18,7 @@ import ExploreSection from '../components/dashboard/ExploreSection'
 
 import { useAuth } from '../hooks/useAuth'
 import { useUserStorage } from '../hooks/useUserStorage'
+import { useSettings } from '../hooks/useSettings'
 import { STORAGE_KEYS } from '../utils/storageKeys'
 import { isProfileComplete } from '../data/onboarding'
 import { calculateStreak } from '../utils/streak'
@@ -44,6 +45,7 @@ import {
  */
 function DashboardPage() {
   const { user, profile } = useAuth()
+  const { settings } = useSettings()
 
   const [completed] = useUserStorage(STORAGE_KEYS.completedWorkouts, [])
   const [progress] = useUserStorage(STORAGE_KEYS.progress, [])
@@ -102,7 +104,7 @@ function DashboardPage() {
 
       <div className="dashboard__detail">
         <ProgressOverview weekCount={derived.weekCount} totals={derived.totals} />
-        <RecommendationCard profile={profile} />
+        <RecommendationCard profile={profile} style={settings.preferredWorkoutStyle} />
       </div>
 
       <RecentActivity items={derived.recent} />

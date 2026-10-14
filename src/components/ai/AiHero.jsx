@@ -8,7 +8,7 @@ import Button from '../ui/Button'
  * action asks for the day's insight; the button is disabled and relabelled
  * while a request is in flight so it can never be double-fired.
  */
-function AiHero({ onStart, isLoading }) {
+function AiHero({ onStart, isLoading, disabled = false }) {
   return (
     <section className="ai-hero card" aria-labelledby="ai-hero-title">
       <div className="ai-hero__bg" aria-hidden="true" />
@@ -35,7 +35,7 @@ function AiHero({ onStart, isLoading }) {
             variant="primary"
             size="lg"
             onClick={() => onStart('daily-insight')}
-            disabled={isLoading}
+            disabled={isLoading || disabled}
             aria-busy={isLoading}
           >
             {isLoading ? 'Analyzing…' : "Get Today's Insight"}

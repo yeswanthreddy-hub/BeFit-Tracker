@@ -82,12 +82,12 @@
 }
 
 .dash-header__link--active {
-  color: var(--color-bg);
+  color: var(--color-on-primary);
   background: var(--color-primary);
 }
 
 .dash-header__link--active:hover {
-  color: var(--color-bg);
+  color: var(--color-on-primary);
   background: var(--color-primary-light);
 }
 
@@ -126,7 +126,7 @@
   height: 30px;
   border-radius: 50%;
   background: var(--gradient-primary);
-  color: var(--color-bg);
+  color: var(--color-on-primary);
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.02em;
