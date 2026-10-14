@@ -13,7 +13,9 @@ track food and macros — all persisted locally with `localStorage`.
 - CSS design system
 - `localStorage` for persistent app data
 
-No backend, no database, no external auth. Everything lives in the browser.
+No database and no external auth. Everything the app stores lives in the
+browser. The only server-side code is a single Vercel serverless function that
+proxies AI requests to GroqCloud so the API key never reaches the browser.
 
 ## Local authentication
 
@@ -197,6 +199,7 @@ npm test
 | `test/exercises.test.js` | Catalog integrity (unique ids/names, valid categories and vocabularies, complete records) plus search, combined filtering and related-exercise ranking |
 | `test/workoutSelection.test.js` | Add / remove / toggle / clear rules, corrupt-payload recovery, selection storage key and per-account scoping |
 | `test/workouts.test.js` | Workout template integrity (unique ids, real exercise ids, vocabularies, plan values, duration sanity), workout search/filters, derived plan values, custom-workout normalization, builder validation, and the saved-workout persistence flow (account scoping, edit in place, delete, corrupt storage) |
+| `test/aiFitnessApi.test.js` | The AI proxy handler: method/action validation, the missing-key configuration error, success normalisation, prose fallback, rate-limit and provider/network error mapping, context sanitising, and prompt building |
 
 A localStorage stub in `test/helpers/browser.js` stands in for the browser, so
 the real service and utility code is exercised rather than a reimplementation.
@@ -205,6 +208,43 @@ maps them to real files for the Node resolver instead of touching app source.
 
 ## Environment
 
-Future AI-powered insights will use GroqCloud. Secret keys are **never**
-committed to the repository — see `.env.example` for the placeholder shape and
-`.gitignore` for the ignored env files.
+### AI proxy (GroqCloud)
+
+The AI Fitness Coach gets its answers from GroqCloud, but the browser never
+talks to Groq and never sees the API key. The flow is:
+
+```
+React UI  →  POST /api/ai/fitness  →  serverless function  →  GROQ_API_KEY  →  GroqCloud  →  structured result  →  UI
+```
+
+- `api/ai/fitness.js` is the only code that reads the key. It validates the
+  request, sanitises the context, calls Groq, and returns a normalised JSON
+  result with a safe status code.
+- `src/services/aiService.js` is the only browser caller. It POSTs to the
+  endpoint and maps failures to human-readable messages.
+- The key is read from `process.env.GROQ_API_KEY`. It must **never** be
+  prefixed with `VITE_`, imported into React, written to `localStorage`, logged,
+  or committed.
+
+| Variable | Where | Purpose |
+| --- | --- | --- |
+| `GROQ_API_KEY` | Server env (Vercel project settings, or `.env` locally) | The Groq API key used by `api/ai/fitness.js` |
+| `GROQ_MODEL` | Server env (optional) | Overrides the default model (`llama-3.3-70b-versatile`) |
+
+### Running locally
+
+```bash
+cp .env.example .env      # then set GROQ_API_KEY in .env
+npm run dev               # Vite also serves POST /api/ai/fitness via a dev middleware
+```
+
+`npm run dev` needs no extra command: a small Vite plugin reuses the same
+request handler so the AI route works in development exactly as it does on
+Vercel. `vite preview` gets the same treatment via `configurePreviewServer`. If
+you prefer the real serverless runtime, install the Vercel CLI and run
+`vercel dev`.
+
+Because `api/ai/fitness.js` follows the Vercel Node function convention, no
+extra configuration is needed to deploy: Vercel picks up the `api/` directory
+automatically. Secret keys are **never** committed — see `.env.example` for the
+placeholder shape and `.gitignore` for the ignored env files.

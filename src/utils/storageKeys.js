@@ -32,6 +32,7 @@ export const STORAGE_KEYS = {
   streak: 'befit_streak',
   settings: 'befit_settings',
   aiPreferences: 'befit_ai_preferences',
+  aiInsights: 'befit_ai_insights',
   workoutBuilder: 'befit_workout_builder',
   activeSession: 'befit_active_workout_session',
 }
