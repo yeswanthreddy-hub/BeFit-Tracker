@@ -110,7 +110,7 @@ function Progress() {
   const hasAnyData = data.hasWorkouts || data.hasNutrition
 
   return (
-    <PageContainer className="progress">
+    <PageContainer className="progress-page">
       <SectionHeader
         eyebrow="Analytics"
         title="Your Progress"
