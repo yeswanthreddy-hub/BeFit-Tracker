@@ -23,7 +23,7 @@ import WorkoutComplete from './pages/WorkoutComplete/WorkoutComplete'
 import WorkoutBuilder from './pages/WorkoutBuilder/WorkoutBuilder'
 import CompletedWorkoutsPage from './pages/CompletedWorkoutsPage'
 import Diet from './pages/Diet/Diet'
-import ProgressPage from './pages/ProgressPage'
+import Progress from './pages/Progress/Progress'
 import AiTrackerPage from './pages/AiTrackerPage'
 import SettingsPage from './pages/SettingsPage'
 import NotFoundPage from './pages/NotFoundPage'
@@ -125,7 +125,14 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route path="/progress" element={<ProgressPage />} />
+              <Route
+                path="/progress"
+                element={
+                  <ProtectedRoute>
+                    <Progress />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/ai-tracker" element={<AiTrackerPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="*" element={<NotFoundPage />} />

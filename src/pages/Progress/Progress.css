@@ -1,0 +1,780 @@
+/* =========================================================
+   BeFit — Progress & analytics
+============================================================= */
+
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding-bottom: var(--spacing-lg);
+}
+
+.progress__empty-actions {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ---------- overview stat cards ---------- */
+
+.progress__overview {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+}
+
+.progress-stat {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: progress-rise 420ms var(--ease-out) both;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal),
+    border-color var(--transition-normal);
+}
+
+.progress-stat:hover {
+  transform: translateY(-4px);
+  border-color: var(--color-border-strong);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), var(--shadow-card-hover);
+}
+
+.progress-stat::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(120px 80px at 100% 0%, var(--stat-glow, transparent), transparent 70%);
+}
+
+.progress-stat--primary {
+  --stat-glow: var(--color-primary-dim);
+}
+
+.progress-stat--accent {
+  --stat-glow: var(--color-accent-dim);
+}
+
+.progress-stat--warn {
+  --stat-glow: rgba(251, 146, 60, 0.14);
+}
+
+.progress-stat__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress-stat__icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.progress-stat__title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+}
+
+.progress-stat__value {
+  font-size: clamp(1.7rem, 4vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.progress-stat__label {
+  font-size: 0.85rem;
+  color: var(--color-text-faint);
+}
+
+/* ---------- range selector ---------- */
+
+.progress__range {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2xs);
+  padding: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  align-self: flex-start;
+}
+
+.progress__range-btn {
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.progress__range-btn:hover {
+  color: var(--color-text);
+  background: var(--color-surface-hover);
+}
+
+.progress__range-btn.is-active {
+  background: var(--gradient-primary);
+  color: #0a0c0e;
+}
+
+/* ---------- generic sections ---------- */
+
+.progress__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.progress__section-title {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.progress__section-note {
+  margin: -8px 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.progress__section-empty {
+  margin: 0;
+  color: var(--color-text-faint);
+  font-size: 0.9rem;
+}
+
+.progress__split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+  align-items: stretch;
+}
+
+/* ---------- training time ---------- */
+
+.progress__duration {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+  margin: 0;
+}
+
+.progress__duration dt {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-faint);
+}
+
+.progress__duration dd {
+  margin: 2px 0 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.progress__consistency {
+  margin-top: var(--spacing-xs);
+  height: 10px;
+}
+
+/* ---------- activity chart ---------- */
+
+.activity-chart {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.activity-chart__bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 200px;
+}
+
+.activity-chart__col {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+}
+
+.activity-chart__track {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.03));
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.activity-chart__bar {
+  width: 100%;
+  max-width: 34px;
+  min-height: 2px;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: linear-gradient(180deg, var(--color-primary-light), var(--color-primary));
+  transform-origin: bottom;
+  animation: bar-grow 520ms var(--ease-out) both;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.activity-chart__count {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #0a0c0e;
+  margin-top: 2px;
+}
+
+.activity-chart__label {
+  font-size: 0.7rem;
+  color: var(--color-text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.activity-chart__legend {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.activity-chart__peak {
+  color: var(--color-accent);
+}
+
+/* ---------- trend chart ---------- */
+
+.trend-chart {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.trend-chart__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.trend-chart__grid {
+  stroke: var(--color-border);
+  stroke-width: 1;
+}
+
+.trend-chart__axis {
+  fill: var(--color-text-faint);
+  font-size: 11px;
+}
+
+.trend-chart__target {
+  stroke: var(--color-danger);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 6;
+  opacity: 0.8;
+}
+
+.trend-chart__line {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.trend-chart--primary .trend-chart__line {
+  stroke: var(--color-primary);
+}
+
+.trend-chart--accent .trend-chart__line {
+  stroke: var(--color-accent);
+}
+
+.trend-chart__area {
+  fill: var(--color-primary-dim);
+  stroke: none;
+  opacity: 0.6;
+}
+
+.trend-chart--accent .trend-chart__area {
+  fill: var(--color-accent-dim);
+}
+
+.trend-chart__dot {
+  fill: var(--color-surface);
+  stroke-width: 2;
+}
+
+.trend-chart--primary .trend-chart__dot {
+  stroke: var(--color-primary);
+}
+
+.trend-chart--accent .trend-chart__dot {
+  stroke: var(--color-accent);
+}
+
+.trend-chart__legend {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.trend-chart__key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.trend-chart__key::before {
+  content: '';
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--color-primary);
+}
+
+.trend-chart__key--target::before {
+  background: var(--color-danger);
+  height: 0;
+  border-top: 2px dashed var(--color-danger);
+}
+
+.trend-chart--accent .trend-chart__key--line::before {
+  background: var(--color-accent);
+}
+
+.trend-chart__empty {
+  margin: 0;
+  padding: var(--spacing-md);
+  text-align: center;
+  color: var(--color-text-faint);
+}
+
+/* ---------- consistency strip ---------- */
+
+.consistency {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.consistency__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.consistency__title {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+}
+
+.consistency__note {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.consistency__badge {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.consistency__days {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--spacing-xs);
+  margin: 0;
+  padding: 0;
+}
+
+.consistency__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--spacing-xs) 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+
+.consistency__day--active {
+  background: var(--color-primary-dim);
+  border-color: rgba(185, 243, 74, 0.35);
+}
+
+.consistency__day--today {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.consistency__dot {
+  font-size: 1rem;
+  color: var(--color-text-faint);
+  line-height: 1;
+}
+
+.consistency__day--active .consistency__dot {
+  color: var(--color-primary);
+}
+
+.consistency__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+/* ---------- stat bars ---------- */
+
+.stat-bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.stat-bars__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  margin-bottom: 6px;
+}
+
+.stat-bars__name {
+  font-weight: 700;
+}
+
+.stat-bars__value {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.stat-bars__track {
+  height: 8px;
+}
+
+.stat-bars__fill {
+  background: linear-gradient(90deg, var(--color-accent), var(--color-primary));
+}
+
+/* ---------- nutrition progress ---------- */
+
+.nutrition-progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.nutrition-progress__title {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+}
+
+.nutrition-progress__note {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.nutrition-progress__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+  margin: 0;
+}
+
+.nutrition-progress__stat dt {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-faint);
+}
+
+.nutrition-progress__stat dd {
+  margin: 2px 0 0;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.nutrition-progress__stat span {
+  font-size: 0.8rem;
+  color: var(--color-text-faint);
+}
+
+.nutrition-progress__macros {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border);
+}
+
+.nutrition-progress__macro {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nutrition-progress__macro-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-faint);
+}
+
+.nutrition-progress__macro-value {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.nutrition-progress__disclaimer {
+  margin: 0;
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-faint);
+  font-size: 0.78rem;
+}
+
+/* ---------- personal bests ---------- */
+
+.bests {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.bests__title {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+}
+
+.bests__note {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.bests__empty {
+  margin: 0;
+  color: var(--color-text-faint);
+}
+
+.bests__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-xs);
+}
+
+.best {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+
+.best--earned {
+  border-color: rgba(185, 243, 74, 0.35);
+  background: var(--color-primary-dim);
+}
+
+.best__badge {
+  font-size: 1.1rem;
+  line-height: 1.3;
+}
+
+.best--earned .best__badge {
+  color: var(--color-primary);
+}
+
+.best--locked .best__badge {
+  color: var(--color-text-faint);
+}
+
+.best__body {
+  display: flex;
+  flex-direction: column;
+}
+
+.best__title {
+  font-weight: 700;
+}
+
+.best__note {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.bests__locked {
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border);
+}
+
+.bests__locked-title {
+  margin: 0 0 var(--spacing-xs);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-faint);
+}
+
+/* ---------- insights ---------- */
+
+.progress__insights {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.progress__insights-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.progress__insight {
+  position: relative;
+  padding-left: var(--spacing-md);
+  color: var(--color-text-muted);
+}
+
+.progress__insight::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+/* ---------- animation ---------- */
+
+@keyframes progress-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bar-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 959px) {
+  .progress__overview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .progress__split {
+    grid-template-columns: 1fr;
+  }
+
+  .bests__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 639px) {
+  .progress__overview {
+    grid-template-columns: 1fr;
+  }
+
+  .progress__duration {
+    grid-template-columns: 1fr;
+  }
+
+  .nutrition-progress__stats {
+    grid-template-columns: 1fr;
+  }
+
+  .nutrition-progress__macros {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .progress__range {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .progress__range-btn {
+    flex: 1 1 auto;
+    padding: 8px 10px;
+  }
+
+  .activity-chart__bars {
+    height: 160px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-stat,
+  .activity-chart__bar {
+    animation: none;
+  }
+
+  .progress-stat:hover {
+    transform: none;
+  }
+}

@@ -1,0 +1,227 @@
+import { useMemo, useState } from 'react'
+
+import PageContainer from '../../components/ui/PageContainer'
+import SectionHeader from '../../components/ui/SectionHeader'
+import Button from '../../components/ui/Button'
+import EmptyState from '../../components/ui/EmptyState'
+import ProgressStatCard from '../../components/progress/ProgressStatCard'
+import ActivityChart from '../../components/progress/ActivityChart'
+import WorkoutConsistency from '../../components/progress/WorkoutConsistency'
+import StatBars from '../../components/progress/StatBars'
+
+import { useAuth } from '../../hooks/useAuth'
+import { useUserStorage } from '../../hooks/useUserStorage'
+import { useCustomWorkouts } from '../../hooks/useCustomWorkouts'
+import { STORAGE_KEYS } from '../../utils/storageKeys'
+import { getDisplayName } from '../../utils/user'
+import { calculateStreak } from '../../utils/streak'
+import { parseCompletedWorkouts } from '../../utils/workoutHistory'
+import { EXERCISES } from '../../data/exercises'
+import { WORKOUTS } from '../../data/workouts'
+import {
+  RANGE_OPTIONS,
+  filterCompletedByRange,
+  getConsistencyStats,
+  getCurrentWeekConsistency,
+  getMuscleGroupStats,
+  getWorkoutActivity,
+  getWorkoutCategoryStats,
+  getWorkoutDurationStats,
+  getWorkoutProgress,
+} from '../../utils/progress'
+import './Progress.css'
+
+/**
+ * Progress & analytics.
+ *
+ * Turns the athlete's real completed workouts into a readable picture of how
+ * they are doing. Every number comes from stored data through pure helpers in
+ * `utils/progress.js`; nothing is seeded, faked or assumed, and a fresh account
+ * gets an explicit empty state instead of decorative charts.
+ */
+function Progress() {
+  const { user } = useAuth()
+
+  const [completed] = useUserStorage(STORAGE_KEYS.completedWorkouts, [])
+  const { workouts: customWorkouts } = useCustomWorkouts()
+
+  const [range, setRange] = useState(30)
+
+  // One "now" per render so every range calculation agrees on today.
+  const now = useMemo(() => new Date(), [])
+
+  const data = useMemo(() => {
+    const records = parseCompletedWorkouts(completed)
+    const allWorkouts = [...customWorkouts, ...WORKOUTS]
+
+    const rangedRecords = filterCompletedByRange(records, range, now)
+
+    return {
+      hasWorkouts: records.length > 0,
+      streak: calculateStreak(records),
+      allTime: getWorkoutProgress(records),
+      activity: getWorkoutActivity(records, range, now),
+      week: getCurrentWeekConsistency(records, now),
+      consistency: getConsistencyStats(records, range, now),
+      categoryStats: getWorkoutCategoryStats(rangedRecords),
+      muscleStats: getMuscleGroupStats(rangedRecords, allWorkouts, EXERCISES),
+      duration: getWorkoutDurationStats(records, range, now),
+    }
+  }, [completed, customWorkouts, range, now])
+
+  const firstName = getDisplayName(user)
+
+  return (
+    <PageContainer className="progress">
+      <SectionHeader
+        eyebrow="Analytics"
+        title="Your Progress"
+        sub={`Keep showing up, ${firstName}. Your consistency tells the real story.`}
+      />
+
+      {!data.hasWorkouts ? (
+        <EmptyState
+          title="Your progress story starts here."
+          note="Complete your first workout to unlock detailed analytics about your activity, categories and training time."
+          action={
+            <Button to="/workouts" variant="primary">
+              Start Workout
+            </Button>
+          }
+        />
+      ) : (
+        <>
+          <div className="progress__overview">
+            <ProgressStatCard
+              title="Total Workouts"
+              value={data.allTime.total}
+              label="all time"
+              icon="🏋️"
+              tone="primary"
+            />
+            <ProgressStatCard
+              title="Active Days"
+              value={data.allTime.activeDays}
+              label="days trained"
+              icon="📅"
+              tone="accent"
+            />
+            <ProgressStatCard
+              title="Current Streak"
+              value={`${data.streak.current}`}
+              label={`${data.streak.current === 1 ? 'day' : 'days'} in a row`}
+              icon="🔥"
+              tone="warn"
+            />
+            <ProgressStatCard
+              title="Total Workout Time"
+              value={data.allTime.totalLabel}
+              label="accumulated"
+              icon="⏱️"
+            />
+          </div>
+
+          <div className="progress__range" role="group" aria-label="Select a time range">
+            {RANGE_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className={`progress__range-btn${range === option.value ? ' is-active' : ''}`}
+                onClick={() => setRange(option.value)}
+                aria-pressed={range === option.value}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+
+          <section className="progress__section card" aria-labelledby="progress-activity-heading">
+            <h2 className="progress__section-title" id="progress-activity-heading">
+              Workout activity
+            </h2>
+            <p className="progress__section-note">Completed workouts per {data.activity.bucketSize}.</p>
+            <ActivityChart buckets={data.activity.buckets} />
+          </section>
+
+          <div className="progress__split">
+            <WorkoutConsistency days={data.week} />
+
+            <section className="progress__section card" aria-labelledby="progress-duration-heading">
+              <h2 className="progress__section-title" id="progress-duration-heading">
+                Training time
+              </h2>
+              <p className="progress__section-note">In the selected range.</p>
+              <dl className="progress__duration">
+                <div>
+                  <dt>Total</dt>
+                  <dd>{data.duration.totalLabel}</dd>
+                </div>
+                <div>
+                  <dt>Average</dt>
+                  <dd>{data.duration.averageLabel}</dd>
+                </div>
+                <div>
+                  <dt>Longest</dt>
+                  <dd>{data.duration.longestLabel}</dd>
+                </div>
+                <div>
+                  <dt>Shortest</dt>
+                  <dd>{data.duration.shortestLabel}</dd>
+                </div>
+              </dl>
+            </section>
+          </div>
+
+          <div className="progress__split">
+            <section className="progress__section card" aria-labelledby="progress-category-heading">
+              <h2 className="progress__section-title" id="progress-category-heading">
+                Workout categories
+              </h2>
+              <p className="progress__section-note">Where your sessions come from.</p>
+              {data.categoryStats.length === 0 ? (
+                <p className="progress__section-empty">No workouts in this range.</p>
+              ) : (
+                <StatBars items={data.categoryStats} unit="workouts" />
+              )}
+            </section>
+
+            <section className="progress__section card" aria-labelledby="progress-muscle-heading">
+              <h2 className="progress__section-title" id="progress-muscle-heading">
+                Muscle groups
+              </h2>
+              <p className="progress__section-note">Muscles trained across your sessions.</p>
+              {data.muscleStats.length === 0 ? (
+                <p className="progress__section-empty">
+                  Muscle data appears once your sessions use exercises from the library.
+                </p>
+              ) : (
+                <StatBars items={data.muscleStats} unit="sessions" />
+              )}
+            </section>
+          </div>
+
+          <section className="progress__section card" aria-labelledby="progress-consistency-heading">
+            <h2 className="progress__section-title" id="progress-consistency-heading">
+              Consistency
+            </h2>
+            <p className="progress__section-note">
+              {data.consistency.activeDays} active of {data.consistency.totalDays} days ({data.consistency.percent}%) in this range.
+            </p>
+            <div
+              className="progress progress__consistency"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={data.consistency.percent}
+              aria-label={`Workout consistency ${data.consistency.percent} percent`}
+            >
+              <div className="progress__fill" style={{ width: `${data.consistency.percent}%` }} />
+            </div>
+          </section>
+        </>
+      )}
+    </PageContainer>
+  )
+}
+
+export default Progress
