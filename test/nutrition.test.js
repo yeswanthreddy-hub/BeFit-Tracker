@@ -14,6 +14,7 @@ import {
   getRemainingProtein,
   groupEntriesByMeal,
   normalizeDateKey,
+  normalizeNutritionProfile,
   parseFoodLog,
   progressPercent,
   roundToOne,
@@ -215,6 +216,23 @@ describe('remaining targets', () => {
   it('goes negative once the target is passed rather than hiding it', () => {
     assert.equal(getRemainingCalories(entries, 300, day), -30)
     assert.equal(getRemainingProtein(entries, 50, day), -12)
+  })
+})
+
+describe('normalizeNutritionProfile', () => {
+  it('keeps positive targets and clamps junk to zero', () => {
+    assert.deepEqual(normalizeNutritionProfile({ dailyCalorieTarget: 2200, dailyProteinTarget: 140 }), {
+      dailyCalorieTarget: 2200,
+      dailyProteinTarget: 140,
+      updatedAt: null,
+    })
+    assert.deepEqual(normalizeNutritionProfile(null), {
+      dailyCalorieTarget: 0,
+      dailyProteinTarget: 0,
+      updatedAt: null,
+    })
+    assert.equal(normalizeNutritionProfile({ dailyCalorieTarget: -500 }).dailyCalorieTarget, 0)
+    assert.equal(normalizeNutritionProfile({ dailyCalorieTarget: 'nope' }).dailyCalorieTarget, 0)
   })
 })
 

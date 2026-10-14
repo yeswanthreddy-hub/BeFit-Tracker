@@ -63,6 +63,26 @@ export function normalizeDateKey(value, fallback = new Date()) {
   return toDateKey(fallback)
 }
 
+/* ---------- daily targets ---------- */
+
+/**
+ * Clean the stored nutrition targets.
+ *
+ * Both targets are non-negative numbers; anything unset, corrupt or negative
+ * becomes 0, which the summary reads as "no target set" instead of "0 kcal
+ * allowed". A target therefore never goes missing silently and never blocks a
+ * full day of eating.
+ */
+export function normalizeNutritionProfile(value) {
+  const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {}
+
+  return {
+    dailyCalorieTarget: Math.max(0, Math.round(toNumber(source.dailyCalorieTarget, 0))),
+    dailyProteinTarget: Math.max(0, roundToOne(source.dailyProteinTarget)),
+    updatedAt: typeof source.updatedAt === 'string' ? source.updatedAt : null,
+  }
+}
+
 /* ---------- scaling a food to the servings logged ---------- */
 
 /**
@@ -271,8 +291,7 @@ export function groupEntriesByMeal(entries, date = new Date()) {
   return groups
 }
 
-/** Percentage of a target used, clamped to 0-100 for a progress bar. */
-export function progressPercent(consumed, target) {
+/** Percentage of a target used, clamped to 0-100 for a progress bar. */export function progressPercent(consumed, target) {
   const goal = toNumber(target, 0)
   if (goal <= 0) return 0
   return Math.min(100, Math.max(0, Math.round((toNumber(consumed, 0) / goal) * 100)))

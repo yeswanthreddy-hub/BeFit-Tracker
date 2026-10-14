@@ -1,0 +1,331 @@
+/* =========================================================
+   BeFit — food & diet tracker
+============================================================= */
+
+.diet {
+  padding-bottom: var(--spacing-lg);
+}
+
+/* ---------- day navigation ---------- */
+
+.diet__datebar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  align-self: flex-start;
+}
+
+.diet__date {
+  margin: 0;
+  min-width: 9rem;
+  text-align: center;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- daily summary ---------- */
+
+.diet-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.diet-summary__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.diet-summary__title {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.diet-summary__count {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.diet-summary__big {
+  margin: 0;
+  font-size: clamp(1.9rem, 5vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--color-primary);
+}
+
+.diet-summary__of {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  letter-spacing: 0;
+}
+
+.diet-summary__calories .progress {
+  margin-top: var(--spacing-xs);
+}
+
+.diet-summary__calories p + p {
+  margin-top: 4px;
+}
+
+.diet-summary__note,
+.diet-summary__hint {
+  margin: var(--spacing-xs) 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.diet-summary__hint {
+  color: var(--color-text-faint);
+}
+
+.diet-summary__macros {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+  margin: 0;
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border);
+}
+
+.diet-summary__macro {
+  margin: 0;
+}
+
+.diet-summary__macro-label {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-faint);
+}
+
+.diet-summary__macro-value {
+  margin: 2px 0 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.diet-summary__macro-target {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-faint);
+}
+
+.diet-summary__macro-note {
+  margin: 2px 0 0;
+  font-size: 0.78rem;
+  color: var(--color-accent);
+}
+
+.diet-summary__macro-progress {
+  margin-top: 6px;
+  height: 6px;
+}
+
+/* "Over target" reads as information, never as shame. */
+.diet-summary__macro-note--over {
+  color: var(--color-text-muted);
+}
+
+.diet-summary__over {
+  color: var(--color-text-muted);
+}
+
+/* ---------- targets ---------- */
+
+.diet-targets__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.diet-targets__title {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+}
+
+.diet-targets__note {
+  margin: 0;
+  max-width: 44ch;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.diet-targets__form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+  align-items: end;
+  margin-top: var(--spacing-md);
+}
+
+.diet-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.diet-targets__form .btn {
+  justify-self: start;
+}
+
+/* ---------- meals ---------- */
+
+.diet__meals-title {
+  margin: 0 0 var(--spacing-sm);
+  font-size: 1.2rem;
+}
+
+.diet__meals {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+  align-items: start;
+}
+
+.meal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.meal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.meal__title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.meal__head-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.meal__subtotal {
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.meal__empty {
+  margin: 0;
+  color: var(--color-text-faint);
+  font-size: 0.9rem;
+}
+
+.meal__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.meal__item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.meal__item:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.meal__item-main {
+  min-width: 0;
+}
+
+.meal__item-name {
+  margin: 0;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.meal__custom {
+  padding: 2px 8px;
+  font-size: 0.68rem;
+}
+
+.meal__item-meta {
+  margin: 2px 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+}
+
+.meal__item-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.meal__item-cal {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.meal__remove {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--color-text-faint);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color var(--transition-fast);
+}
+
+.meal__remove:hover {
+  color: var(--color-danger);
+}
+
+/* ---------- footer note ---------- */
+
+.diet__disclaimer {
+  margin: 0;
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-faint);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 719px) {
+  .diet__meals {
+    grid-template-columns: 1fr;
+  }
+
+  .diet-targets__form {
+    grid-template-columns: 1fr;
+  }
+}

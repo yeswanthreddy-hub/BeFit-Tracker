@@ -22,7 +22,7 @@ import WorkoutSession from './pages/WorkoutSession/WorkoutSession'
 import WorkoutComplete from './pages/WorkoutComplete/WorkoutComplete'
 import WorkoutBuilder from './pages/WorkoutBuilder/WorkoutBuilder'
 import CompletedWorkoutsPage from './pages/CompletedWorkoutsPage'
-import DietPage from './pages/DietPage'
+import Diet from './pages/Diet/Diet'
 import ProgressPage from './pages/ProgressPage'
 import AiTrackerPage from './pages/AiTrackerPage'
 import SettingsPage from './pages/SettingsPage'
@@ -117,7 +117,14 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route path="/diet" element={<DietPage />} />
+              <Route
+                path="/diet"
+                element={
+                  <ProtectedRoute>
+                    <Diet />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/progress" element={<ProgressPage />} />
               <Route path="/ai-tracker" element={<AiTrackerPage />} />
               <Route path="/settings" element={<SettingsPage />} />
