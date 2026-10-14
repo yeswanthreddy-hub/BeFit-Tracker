@@ -14,6 +14,8 @@ export const USER_OWNED_KEYS = new Set([
   STORAGE_KEYS.workouts,
   STORAGE_KEYS.completedWorkouts,
   STORAGE_KEYS.foodLog,
+  STORAGE_KEYS.foods,
+  STORAGE_KEYS.nutritionProfile,
   STORAGE_KEYS.progress,
   STORAGE_KEYS.streak,
   STORAGE_KEYS.settings,

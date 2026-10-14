@@ -26,6 +26,8 @@ export const STORAGE_KEYS = {
   completedWorkouts: 'befit_completed_workouts',
   exercises: 'befit_exercises',
   foodLog: 'befit_food_log',
+  foods: 'befit_foods',
+  nutritionProfile: 'befit_nutrition_profile',
   progress: 'befit_progress',
   streak: 'befit_streak',
   settings: 'befit_settings',
