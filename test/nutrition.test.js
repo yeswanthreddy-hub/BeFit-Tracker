@@ -17,6 +17,7 @@ import {
   normalizeNutritionProfile,
   parseFoodLog,
   progressPercent,
+  recentDayKeys,
   roundToOne,
   scaleNutrition,
   summariseDay,
@@ -341,3 +342,28 @@ describe('custom foods', () => {
     assert.deepEqual(validateCustomFoodDraft({ name: 'A', calories: '100' }), {})
   })
 })
+
+
+describe('recentDayKeys', () => {
+  it('returns the requested number of consecutive days, newest first', () => {
+    const keys = recentDayKeys(3)
+    assert.equal(keys.length, 3)
+    assert.equal(keys[0], normalizeDateKey(new Date()))
+
+    const [first, second] = keys
+    const firstDate = new Date(`${first}T00:00:00`)
+    const secondDate = new Date(`${second}T00:00:00`)
+    assert.equal(Math.round((firstDate - secondDate) / 86400000), 1)
+  })
+
+  it('clamps a bad count to at least one day and defaults non-numbers to 7', () => {
+    assert.equal(recentDayKeys(0).length, 1)
+    assert.equal(recentDayKeys(-5).length, 1)
+    assert.equal(recentDayKeys('nonsense').length, 7)
+  })
+
+  it('anchors to a supplied date', () => {
+    assert.deepEqual(recentDayKeys(1, '2026-03-10'), ['2026-03-10'])
+  })
+})
+

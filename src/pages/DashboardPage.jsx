@@ -7,6 +7,7 @@ import ProfileSummary from '../components/dashboard/ProfileSummary'
 import StartWorkoutCard from '../components/dashboard/StartWorkoutCard'
 import QuickWorkoutSection from '../components/dashboard/QuickWorkoutSection'
 import TodaySummary from '../components/dashboard/TodaySummary'
+import NutritionSummaryCard from '../components/dashboard/NutritionSummaryCard'
 import StreakCard from '../components/dashboard/StreakCard'
 import WeeklyActivity from '../components/dashboard/WeeklyActivity'
 import ProgressOverview from '../components/dashboard/ProgressOverview'
@@ -77,6 +78,8 @@ function DashboardPage() {
       </div>
 
       <StartWorkoutCard />
+
+      <NutritionSummaryCard />
 
       <TodaySummary
         todayCount={derived.todayCount}

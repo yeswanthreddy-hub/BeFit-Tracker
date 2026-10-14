@@ -63,8 +63,27 @@ export function normalizeDateKey(value, fallback = new Date()) {
   return toDateKey(fallback)
 }
 
-/* ---------- daily targets ---------- */
+/**
+ * The `YYYY-MM-DD` keys for the most recent days, newest first.
+ *
+ * Used by the nutrition history so a run of days is always consistent and
+ * spans exactly `count` days regardless of month or year boundaries. The count
+ * is clamped to at least 1 so a bad argument can never yield an empty timeline.
+ */
+export function recentDayKeys(count = 7, from = new Date()) {
+  const total = Math.max(1, Math.floor(toNumber(count, 7)))
+  const base = new Date(`${normalizeDateKey(from)}T00:00:00`)
 
+  const keys = []
+  for (let index = 0; index < total; index += 1) {
+    const date = new Date(base)
+    date.setDate(base.getDate() - index)
+    keys.push(toDateKey(date))
+  }
+  return keys
+}
+
+/* ---------- daily targets ---------- */
 /**
  * Clean the stored nutrition targets.
  *

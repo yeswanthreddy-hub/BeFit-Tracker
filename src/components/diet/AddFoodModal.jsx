@@ -24,7 +24,6 @@ const FILTER_ALL = 'All'
  * one.
  */
 function AddFoodModal({
-  open,
   defaultMeal = MEALS[0],
   foods = [],
   recentFoods = [],
@@ -34,7 +33,7 @@ function AddFoodModal({
   onEditCustomFood,
   onDeleteCustomFood,
 }) {
-  const [meal, setMeal] = useState(defaultMeal)
+  const [meal, setMeal] = useState(MEALS.includes(defaultMeal) ? defaultMeal : MEALS[0])
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState(FILTER_ALL)
   const [selectedId, setSelectedId] = useState(null)
@@ -42,14 +41,6 @@ function AddFoodModal({
   const searchRef = useRef(null)
 
   useEffect(() => {
-    if (!open) return undefined
-
-    setMeal(MEALS.includes(defaultMeal) ? defaultMeal : MEALS[0])
-    setQuery('')
-    setCategory(FILTER_ALL)
-    setSelectedId(null)
-    setServings('1')
-
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') onClose()
     }
@@ -60,7 +51,7 @@ function AddFoodModal({
       window.removeEventListener('keydown', handleKeyDown)
       window.clearTimeout(focusId)
     }
-  }, [open, defaultMeal, onClose])
+  }, [onClose])
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase()
@@ -79,8 +70,6 @@ function AddFoodModal({
   const amount = Number(servings)
   const safeServings = Number.isFinite(amount) && amount > 0 ? amount : 1
   const preview = selected ? scaleNutrition(selected, safeServings) : null
-
-  if (!open) return null
 
   const handleSubmit = (event) => {
     event.preventDefault()
@@ -119,9 +108,7 @@ function AddFoodModal({
                 <li key={food.id}>
                   <button
                     type="button"
-                    className={`chip chip--filter${
-                      food.id === selectedId ? ' chip--active' : ''
-                    }`}
+                    className={`chip chip--filter${food.id === selectedId ? ' is-active' : ''}`}
                     onClick={() => setSelectedId(food.id)}
                   >
                     {food.name}

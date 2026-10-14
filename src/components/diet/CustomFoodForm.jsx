@@ -7,6 +7,20 @@ import {
   validateCustomFoodDraft,
 } from '../../utils/customFoods'
 
+function buildDraft(initial) {
+  if (!initial) return createCustomFoodDraft()
+
+  return {
+    name: initial.name ?? '',
+    category: initial.category ?? createCustomFoodDraft().category,
+    servingSize: initial.servingSize ?? '',
+    calories: initial.calories != null ? String(initial.calories) : '',
+    protein: initial.protein != null ? String(initial.protein) : '',
+    carbs: initial.carbs != null ? String(initial.carbs) : '',
+    fats: initial.fats != null ? String(initial.fats) : '',
+  }
+}
+
 /**
  * Create or edit a custom food.
  *
@@ -14,36 +28,17 @@ import {
  * before saving and the messages sit next to the field that caused them, so a
  * mistyped number never silently becomes a zero-calorie food.
  */
-function CustomFoodForm({ open, initial = null, onClose, onSubmit, onDelete }) {
-  const [draft, setDraft] = useState(createCustomFoodDraft)
+function CustomFoodForm({ initial = null, onClose, onSubmit, onDelete }) {
+  const [draft, setDraft] = useState(() => buildDraft(initial))
   const [errors, setErrors] = useState({})
 
   useEffect(() => {
-    if (!open) return undefined
-
-    setErrors({})
-    if (initial) {
-      setDraft({
-        name: initial.name ?? '',
-        category: initial.category ?? createCustomFoodDraft().category,
-        servingSize: initial.servingSize ?? '',
-        calories: initial.calories != null ? String(initial.calories) : '',
-        protein: initial.protein != null ? String(initial.protein) : '',
-        carbs: initial.carbs != null ? String(initial.carbs) : '',
-        fats: initial.fats != null ? String(initial.fats) : '',
-      })
-    } else {
-      setDraft(createCustomFoodDraft())
-    }
-
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') onClose()
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [open, initial, onClose])
-
-  if (!open) return null
+  }, [onClose])
 
   const updateField = (name, value) => setDraft((current) => ({ ...current, [name]: value }))
 

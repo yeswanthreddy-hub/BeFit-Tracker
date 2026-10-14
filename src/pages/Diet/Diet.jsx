@@ -8,6 +8,7 @@ import DailyNutritionSummary from '../../components/diet/DailyNutritionSummary'
 import MealSection from '../../components/diet/MealSection'
 import AddFoodModal from '../../components/diet/AddFoodModal'
 import CustomFoodForm from '../../components/diet/CustomFoodForm'
+import NutritionHistory from '../../components/diet/NutritionHistory'
 import { useFoodLog } from '../../hooks/useFoodLog'
 import { useCustomFoods } from '../../hooks/useCustomFoods'
 import { useNutritionProfile } from '../../hooks/useNutritionProfile'
@@ -262,25 +263,29 @@ function Diet() {
         </div>
       </section>
 
-      <AddFoodModal
-        open={addOpen}
-        defaultMeal={addMeal}
-        foods={allFoods}
-        recentFoods={recentFoods}
-        onClose={() => setAddOpen(false)}
-        onAdd={handleAdd}
-        onNewCustomFood={openCustomNew}
-        onEditCustomFood={openCustomFromAdd}
-        onDeleteCustomFood={requestDeleteCustom}
-      />
+      <NutritionHistory entries={entries} profile={profile} days={7} />
 
-      <CustomFoodForm
-        open={customOpen}
-        initial={editingCustom}
-        onClose={() => setCustomOpen(false)}
-        onSubmit={handleSaveCustom}
-        onDelete={requestDeleteCustom}
-      />
+      {addOpen && (
+        <AddFoodModal
+          defaultMeal={addMeal}
+          foods={allFoods}
+          recentFoods={recentFoods}
+          onClose={() => setAddOpen(false)}
+          onAdd={handleAdd}
+          onNewCustomFood={openCustomNew}
+          onEditCustomFood={openCustomFromAdd}
+          onDeleteCustomFood={requestDeleteCustom}
+        />
+      )}
+
+      {customOpen && (
+        <CustomFoodForm
+          initial={editingCustom}
+          onClose={() => setCustomOpen(false)}
+          onSubmit={handleSaveCustom}
+          onDelete={requestDeleteCustom}
+        />
+      )}
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}
